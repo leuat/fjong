@@ -8,7 +8,7 @@
 #include "raytracerglobals.h"
 #include "rayobject.h"
 #include <QImage>
-
+#include "source/cuda/world.h"
 
 
 
@@ -25,6 +25,7 @@ public:
 
     bool RayMarchSingle(Ray& ray, Pass pass, AbstractRayObject* ignore, int cnt, int tid);
 
+    World toWorld();
 
 };
 

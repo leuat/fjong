@@ -6,6 +6,10 @@
 #include <QImage>
 #include <QThread>
 #include "source/Raytracer/raytracer.h"
+#include <QVector3D>
+#include "source/cuda/world.h"
+
+void RaytraceImage(int nx, int ny, int* img, World* w);
 
 class RaytracerThread  : public QThread
 {
@@ -16,6 +20,7 @@ public:
     void Initialize();
 
     QImage m_img;
+    int* img = nullptr;
     float m_time;
 //    CIniFile m_file;
     int m_elapsedTime;
@@ -25,6 +30,7 @@ public:
 
     void run() override;
     void Init();
+    void Perform();
 signals:
     void SignalImageUpdate();
 };

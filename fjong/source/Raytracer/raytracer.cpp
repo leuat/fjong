@@ -24,7 +24,7 @@ void RayTracer::Raytrace(QImage &img)
 
 
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for (int j=0;j<img.height();j++)
         for (int i=0;i<img.width();i++) {
             QVector3D dir = m_camera.coord2ray(i,j,img.width());
@@ -98,7 +98,7 @@ void RayTracer::Raymarch(QImage &img)
 
 
        float aspect = img.width()/(float)img.height();
-#pragma omp parallel for
+//#pragma omp parallel for
     for (int j=0;j<img.height();j++)
         for (int i=0;i<img.width();i++) {
 
@@ -246,4 +246,25 @@ bool RayTracer::RayMarchSingle(Ray& ray, Pass pass, AbstractRayObject* ignore, i
     m_globals.Sky(&ray,m_globals.m_skyScale);
 
     return false;
+}
+World RayTracer::toWorld()
+{
+    World w;
+    int cnt = 0;
+    QVector<marchobject*> objs;
+    for (AbstractRayObject* o: m_objects) {
+        RayObjectSphere* s = dynamic_cast<RayObjectSphere*>(o);
+        if (s!=nullptr) {
+            marchobject* mo = new mo_sphere();
+            mo->pos = vec3(s->m_position.x(),s->m_position.y(),s->m_position.z());
+            mo->p1 = vec3(s->m_radius.x(),s->m_radius.y(),s->m_radius.z());
+            mo->type = 0;
+            objs.append(mo);
+        }
+    }
+    w.length = objs.count();
+    w.objects = new marchobject[w.length];
+    for (int i=0;i<w.length;i++)
+        w.objects[i] = *objs[i];
+    return w;
 }

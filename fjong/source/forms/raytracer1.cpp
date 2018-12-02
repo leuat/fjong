@@ -13,7 +13,7 @@ void RaytracerThread::Initialize()
     //     m_rt.m_globals.m_lights.append(new DirectionalLight(QVector3D(-1,1,0),QVector3D(1,0.7,0)));
         m_rt.m_globals.m_lights[0]->m_color = QVector3D(1,1,0.7);
     //     SetParameters(0);
-        m_img = QImage(320,200,QImage::Format_ARGB32);
+        m_img = QImage(400,300,QImage::Format_ARGB32);
         //m_img = QImage(160,200,QImage::Format_ARGB32);
       //  m_img = QImage(400,300,QImage::Format_ARGB32);
      //   m_img = QImage(1980,1600,QImage::Format_ARGB32);
@@ -42,7 +42,7 @@ void RaytracerThread::Initialize()
             float pn = 0.0;
             float ps =3.2;
     //        k=45;
-
+             k=35;
             float ref = rand()%100/100.0;
     //        k=45;
            if (k>=0 && k<30)
@@ -70,24 +70,22 @@ void RaytracerThread::Initialize()
 
 }
 
+
+
 void RaytracerThread::run()
 {
+    img = new int[m_img.width()*m_img.height()*3];
+    for (int i=0;i<m_img.width()*m_img.height()*3;i++)
+        img[i]=rand()%255;
+
     while (!m_abort) {
         m_time+=1;
         // m_mc->Clear();
-        m_img.fill(QColor(0,0,0,255));
-        Init();
-        m_timer = QElapsedTimer();
-        m_timer.start();
-//        m_timer.
-//        m_rt.Raytrace(m_img);
-        m_rt.Raymarch(m_img);
-        m_elapsedTime = m_timer.elapsed();
-      //  m_img.save("test.png");
         emit SignalImageUpdate();
-        this->msleep(10);
+        this->msleep(50);
     }
 
+    delete img;
 }
 
 
@@ -133,5 +131,33 @@ void RaytracerThread::Init()
         float t = m_time/12.3 + i*542;
         m_rt.m_objects[i]->m_material.m_reflectivity = 0.1;//sin(t)/2.0+1;
     }*/
+}
+
+void RaytracerThread::Perform()
+{
+    m_img.fill(QColor(0,0,0,255));
+    Init();
+    m_timer = QElapsedTimer();
+    m_timer.start();
+//        m_timer.
+//        m_rt.Raytrace(m_img);
+ //   m_rt.Raymarch(m_img);
+    World world = m_rt.toWorld();
+//    qDebug() << "l: " <<sizeof(World)+world.length*sizeof(marchobject);
+
+    RaytraceImage(m_img.width(), m_img.height(), img, &world);
+
+
+    int k=0;
+        for (int j=0;j<m_img.height();j++) {
+            for (int i=0;i<m_img.width();i++) {
+                m_img.setPixel(i,j,Util::toColor(QVector3D(img[3*k+0],img[3*k+1],img[3*k+2])).rgba());
+                k++;
+          }
+        }
+
+    m_elapsedTime = m_timer.elapsed();
+  //  m_img.save("test.png");
+
 }
 
