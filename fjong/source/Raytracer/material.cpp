@@ -1,13 +1,40 @@
 #include "material.h"
-#include <QDebug>
+
 Material::Material()
 {
+
+}
+
+Material::Material(QVector3D col, float shin, float ref, float perlin, float ps, QString texture) {
+    m_color = col;
+    m_shininess = shin;
+    m_reflectivity = ref;
+    m_perlinness = perlin;
+    m_perlinScale = ps;
+
+
+
+    if (texture!="") {
+        m_hasTexture = true;
+        QString f = "textures/"+texture;
+        if (!QFile::exists(f)) {
+            qDebug() << "Could not find file: " << f;
+            exit(1);
+        }
+//        qDebug() << "File exists!";
+        m_texture.Load(f);
+
+      //  qDebug() << "DONE";
+
+    }
 
 }
 
 void Texture::GenerateMipMaps() {
     m_images.append(m_image);
     QImage* cur = m_image;
+
+
     int ww = cur->width();
     int hh = cur->height();
     for (int i=0;i<8;i++) {

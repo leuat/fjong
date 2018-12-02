@@ -68,9 +68,9 @@ SOURCES += \
     ../../TRSE/source/LeLib/util/cinifile.cpp \
     ../../TRSE/source/LeLib/util/SimplexNoise.cpp \
     source/forms/dialogeffects.cpp \
-    source/forms/raytracer1.cpp
-        ../../TRSE/source/LeLib/util/cinifile.cpp
-        ../../TRSE/source/LeLib/util/SimplexNoise.cpp
+    source/forms/raytracer1.cpp \
+        ../../TRSE/source/LeLib/util/cinifile.cpp \
+        ../../TRSE/source/LeLib/util/SimplexNoise.cpp \
         ../../TRSE/source/LeLib/util/util.cpp
 
 HEADERS += \
@@ -93,6 +93,3 @@ FORMS += \
     source/forms/dialogeffects.ui
 
 # Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target

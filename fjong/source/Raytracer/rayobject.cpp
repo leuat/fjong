@@ -46,17 +46,16 @@ void AbstractRayObject::CalculateLight(Ray* ray, QVector3D& normal, QVector3D& t
 
         if (pass==0)
         {
-
+            //m_material.m_hasTexture=false;
             if (m_material.m_hasTexture) {
                 QVector3D uv = CalculateUV(isp, normal, tangent);
 
                 float lvl = pow(0.1*l,0.9);
-//                lvl = 0;
-                //            lvl = 4;
                 QImage* img = m_material.m_texture.get(lvl);
                 float uu = abs((int)(uv.x()*(float)img->width())%img->width());
                 float vv = abs((int)(uv.y()*(float)img->height())%img->height());
-                QVector3D c = Util::fromColor(QColor(img->pixel(uu,vv)))/256.;
+                QColor org = img->pixel(uu,vv);
+                QVector3D c = Util::fromColor(org)/256.;
                 col.setX(col.x()*c.x());
                 col.setY(col.y()*c.y());
                 col.setZ(col.z()*c.z());

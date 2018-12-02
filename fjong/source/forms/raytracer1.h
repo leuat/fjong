@@ -12,6 +12,9 @@ class RaytracerThread  : public QThread
     Q_OBJECT
 public:
     RaytracerThread();
+
+    void Initialize();
+
     QImage m_img;
     float m_time;
 //    CIniFile m_file;

@@ -40,3 +40,4 @@ void MainWindow::SetDarkPalette() {
 
 
 }
+

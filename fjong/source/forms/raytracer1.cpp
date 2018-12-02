@@ -4,60 +4,66 @@ RaytracerThread::RaytracerThread()
 {
 
 
-//     m_rt.m_globals.m_lights.append(new DirectionalLight(QVector3D(-1,1,0),QVector3D(1,0.7,0)));
-    m_rt.m_globals.m_lights[0]->m_color = QVector3D(1,1,0.7);
-//     SetParameters(0);
-    m_img = QImage(320,200,QImage::Format_ARGB32);
-    //m_img = QImage(160,200,QImage::Format_ARGB32);
-  //  m_img = QImage(400,300,QImage::Format_ARGB32);
- //   m_img = QImage(1980,1600,QImage::Format_ARGB32);
-    m_rt.m_objects.clear();
+//    qDebug() << "whoo";
 
- /*   m_rt.m_objects.append(new RayObjectSphere(QVector3D(0,0,0),QVector3D(1,1,1), QVector3D(1,0,1),50,0.5));
-    m_rt.m_objects.append(new RayObjectSphere(QVector3D(1.5,2,0),QVector3D(1.0,1.0,1.0), QVector3D(0,1,0),100,0.7));
-    m_rt.m_objects.append(new RayObjectSphere(QVector3D(-3.3,-3.3,0),QVector3D(2,2,2), QVector3D(0.1,0.2,1),80,0.6));
+}
 
-    */
-//    m_rt.m_objects.append(new RayObjectSphere(QVector3D(0,0,0),QVector3D(2,2,2), QVector3D(1,0.8,0.2),10,0));
+void RaytracerThread::Initialize()
+{
+    //     m_rt.m_globals.m_lights.append(new DirectionalLight(QVector3D(-1,1,0),QVector3D(1,0.7,0)));
+        m_rt.m_globals.m_lights[0]->m_color = QVector3D(1,1,0.7);
+    //     SetParameters(0);
+        m_img = QImage(320,200,QImage::Format_ARGB32);
+        //m_img = QImage(160,200,QImage::Format_ARGB32);
+      //  m_img = QImage(400,300,QImage::Format_ARGB32);
+     //   m_img = QImage(1980,1600,QImage::Format_ARGB32);
+        m_rt.m_objects.clear();
+
+     /*   m_rt.m_objects.append(new RayObjectSphere(QVector3D(0,0,0),QVector3D(1,1,1), QVector3D(1,0,1),50,0.5));
+        m_rt.m_objects.append(new RayObjectSphere(QVector3D(1.5,2,0),QVector3D(1.0,1.0,1.0), QVector3D(0,1,0),100,0.7));
+        m_rt.m_objects.append(new RayObjectSphere(QVector3D(-3.3,-3.3,0),QVector3D(2,2,2), QVector3D(0.1,0.2,1),80,0.6));
+
+        */
+    //    m_rt.m_objects.append(new RayObjectSphere(QVector3D(0,0,0),QVector3D(2,2,2), QVector3D(1,0.8,0.2),10,0));
 
 
-    m_rt.m_camera.m_camera = QVector3D(0,0,-5);
-    float a = 0.05;
-    m_rt.m_globals.m_ambient = QVector3D(a,a,a);
+        m_rt.m_camera.m_camera = QVector3D(0,0,-5);
+        float a = 0.05;
+        m_rt.m_globals.m_ambient = QVector3D(a,a,a);
 
-    for (int i=0;i<8; i++) {
-        int rw = 8;
-        int rx = 16;
-        QVector3D pos = QVector3D(rand()%rx-rx/2,rand()%rw-rw/2+1,rand()%rx-rx/2 );
-        QVector3D col = QVector3D(rand()%rw,rand()%rw,rand()%rw)/(float)rw;
-        int k= rand()%100;
- //       if (i==0) k=10;
-   //     if (i==1) k=70;
-        float pn = 0.0;
-        float ps =3.2;
-//        k=45;
+        for (int i=0;i<8; i++) {
+            int rw = 8;
+            int rx = 16;
+            QVector3D pos = QVector3D(rand()%rx-rx/2,rand()%rw-rw/2+1,rand()%rx-rx/2 );
+            QVector3D col = QVector3D(rand()%rw,rand()%rw,rand()%rw)/(float)rw;
+            int k= rand()%100;
+     //       if (i==0) k=10;
+       //     if (i==1) k=70;
+            float pn = 0.0;
+            float ps =3.2;
+    //        k=45;
 
-        float ref = rand()%100/100.0;
-//        k=45;
-       if (k>=0 && k<30)
-            m_rt.m_objects.append(new RayObjectBox(pos,QVector3D(1,1,1), Material(col,rand()%100,ref, pn,ps,"")));
-        else if
-           (k>=30 && k<=40)
-            m_rt.m_objects.append(new RayObjectSphere(pos,QVector3D(1,1,1), Material(col,rand()%100,ref, pn,ps,"")));
-       else if
-          (k>=40 && k<=60)
-           m_rt.m_objects.append(new RayObjectCylinder(pos,QVector3D(0.3,0.1,2), Material(col,rand()%100,ref, pn,ps,"")));
-        else
-            m_rt.m_objects.append(new RayObjectTorus(pos,QVector3D(1,0.3,0), QVector3D(0,1,0),Material(col,rand()%100,ref, pn,ps,"")));
+            float ref = rand()%100/100.0;
+    //        k=45;
+           if (k>=0 && k<30)
+                m_rt.m_objects.append(new RayObjectBox(pos,QVector3D(1,1,1), Material(col,rand()%100,ref, pn,ps,"")));
+            else if
+               (k>=30 && k<=40)
+                m_rt.m_objects.append(new RayObjectSphere(pos,QVector3D(1,1,1), Material(col,rand()%100,ref, pn,ps,"")));
+           else if
+              (k>=40 && k<=60)
+               m_rt.m_objects.append(new RayObjectCylinder(pos,QVector3D(0.3,0.1,2), Material(col,rand()%100,ref, pn,ps,"")));
+            else
+                m_rt.m_objects.append(new RayObjectTorus(pos,QVector3D(1,0.3,0), QVector3D(0,1,0),Material(col,rand()%100,ref, pn,ps,"")));
 
-    }
+        }
 
-//    m_rt.m_objects.append(new RayObjectTorus(QVector3D(0,0,0),QVector3D(2,1,0), QVector3D(0,1,0), Material(col,rand()%150+100,0.4, 0.0f,19.123,"")));
-//    m_rt.m_objects.append(new RayObjectPlane(QVector3D(0,-4,0),QVector3D(0,1,0),
-  //                                           Material(QVector3D(0.9, 0.7, 0.5),30,0.5,0.0f,3.0, "brick1.jpg")));
+    //    m_rt.m_objects.append(new RayObjectTorus(QVector3D(0,0,0),QVector3D(2,1,0), QVector3D(0,1,0), Material(col,rand()%150+100,0.4, 0.0f,19.123,"")));
+    //    m_rt.m_objects.append(new RayObjectPlane(QVector3D(0,-4,0),QVector3D(0,1,0),
+      //                                           Material(QVector3D(0.9, 0.7, 0.5),30,0.5,0.0f,3.0, "brick1.jpg")));
 
-    m_rt.m_objects.append(new RayObjectPlane(QVector3D(0,-4,0),QVector3D(0,1,0),
-                                             Material(QVector3D(0.9, 0.7, 0.5),30,0.5,0.0f,3.0, "brick1_256.png")));
+        m_rt.m_objects.append(new RayObjectPlane(QVector3D(0,-4,0),QVector3D(0,1,0),
+                                                 Material(QVector3D(0.9, 0.7, 0.5),30,0.5,0.0f,3.0, "brick1_256.png")));
 
 
 

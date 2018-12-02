@@ -46,7 +46,7 @@ void DialogEffects::Create()
     }
 
     m_effect = new RaytracerThread();
-
+    m_effect->Initialize();
     connect(m_effect,SIGNAL(SignalImageUpdate()),this,SLOT(UpdateImage()));
     m_effect->start();
 }

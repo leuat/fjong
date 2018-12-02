@@ -3,7 +3,10 @@
 
 #include <QVector3D>
 #include <QString>
+#include <QDebug>
+
 #include <QImage>
+#include <QFile>
 #include <QVector>
 #include <math.h>
 
@@ -16,7 +19,16 @@ public:
 
     void Load(QString f) {
         m_image = new QImage();
-        m_image->load(f);
+        if (!m_image->load(f)) {
+            qDebug() << "Unsupported image format: " << f;
+            exit(1);
+
+        }
+        if (m_image->width()==0) {
+            qDebug() << "Error loading file: " << f;
+            qDebug() << QFile::exists(f);
+            exit(1);
+        }
         GenerateMipMaps();
     }
     QImage* get(int lvl) {
@@ -44,19 +56,7 @@ public:
     Texture m_texture;
     bool m_hasTexture = false;
 
-    Material(QVector3D col, float shin, float ref, float perlin, float ps, QString texture) {
-        m_color = col;
-        m_shininess = shin;
-        m_reflectivity = ref;
-        m_perlinness = perlin;
-        m_perlinScale = ps;
-
-        if (texture!="") {
-            m_hasTexture = true;
-            m_texture.Load("textures/"+texture);
-
-        }
-    }
+    Material(QVector3D col, float shin, float ref, float perlin, float ps, QString texture);
 
 };
 
