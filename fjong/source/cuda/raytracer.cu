@@ -42,14 +42,15 @@ vectorAdd(const float *A, const float *B, float *C, int numElements)
 /**
  * Host main routine
  */
-__device__ bool raymarchSingle(ray& r, int pass, int cnt, World* world, marchobject* objects)//, hitable **world) {
+__device__ bool raymarchSingle(ray& r, int pass, int cnt, World* world, marchobject** objects)//, hitable **world) {
 {
+    //marchobject::Init();
      vec3 isp;
      float shadow = 1;
      float t = 1;
      int winner = -1;
      r.curPos = r.org;
-    world->length=7;
+ //   world->length=7;
         for (int i=0;i<cnt;i++) {
             float precis = 0.004*t;
             float keep=1000.0;
@@ -58,16 +59,9 @@ __device__ bool raymarchSingle(ray& r, int pass, int cnt, World* world, marchobj
             r.curPos = r.point_at_parameter(t);
 
             int w= -1;
-            for (int j=0;j<world->length;j++) {//marchobject* ro: culled) {
-//                marchobject* ro = world->objects[i];
-//                if (ro==ignore)
-  //                  continue;
-                //ro->m_localRay[tid].setCurrent(t);
-                float keep2=1000;
-                if (objects[j].type==0)
-                    keep2 = marchobject::intersectSphere(r, objects[j].pos, objects[j].p1.x());
-
-//                float keep2 =world->objects[j].intersect(r);
+//            for (int j=0;j<world->length;j++) {//marchobject* ro: culled) {
+                for (int j=0;j<world->length;j++) {//marchobject* ro: culled) {
+                float keep2 = objects[j]->intersect(r);
                 if (keep2<keep) {
                     keep = keep2;
                     w = j;
@@ -96,72 +90,76 @@ __device__ bool raymarchSingle(ray& r, int pass, int cnt, World* world, marchobj
     //                exit(1);
             isp = rotated.curPos;
             r.intensity = vec3(1,0,0);
-/*__global__ void create_world(hitable **d_list, hitable **d_world, camera **d_camera) {
-    if (threadIdx.x == 0 && blockIdx.x == 0) {
-        d_list[0] = new sphere(vec3(0,0,-1), 0.5,
-                               new lambertian(vec3(0.8, 0.3, 0.3)));
-        d_list[1] = new sphere(vec3(0,-100.5,-1), 100,
-                               new lambertian(vec3(0.8, 0.8, 0.0)));
-        d_list[2] = new sphere(vec3(1,0,-1), 0.5,
-                               new metal(vec3(0.8, 0.6, 0.2), 1.0));
-        d_list[3] = new sphere(vec3(-1,0,-1), 0.5,
-                               new metal(vec3(0.8, 0.8, 0.8), 0.3));
-        *d_world  = new hitable_list(d_list,4);
-        *d_camera = new camera();
-    }
-}            vec3 normal = winner->CalcMarchNormal(rotated.m_currentPos);
+            vec3 normal = objects[winner]->CalcMarchNormal(rotated.curPos);
             //normal = winner->m_rotmatInv*normal;
             vec3 tt(1,2,-213.123);
-            vec3 tangent = vec3::crossProduct(tt,normal).normalized();
-            vec3 bi = vec3::crossProduct(tangent,normal).normalized();
+            vec3 tangent =cross(tt,normal).normalized();
+            vec3 bi = cross(tangent,normal).normalized();
 
             //normal  = winner->GetPerturbedNormal(isp,normal,tangent,m_globals);
 
 
     //        ray.m_reflect = 0;
-            QVector3D reflectionDir = ray.m_direction-2*QVector3D::dotProduct(ray.m_direction, normal)*normal;
-            QVector3D lp = ray.m_currentPos;//-winner->m_localPos;
+            vec3 reflectionDir = r.dir-normal*2*dot(r.dir, normal);;
+            vec3 lp = r.curPos;//-winner->m_localPos;
      //       ray.m_z=10000;
-            winner->CalculateLight(&ray,normal,tangent,lp,m_globals,reflectionDir,m_objects,0);
+            objects[winner]->CalculateLight(&r,normal,tangent,lp,world,reflectionDir,objects,0);
 
+//            objects[winner]->reflectivity = 0.9;
 
-            if (winner->m_material.m_reflectivity>0 && ray.m_reflect>0) {
-                Ray nxt(lp,reflectionDir);
-                nxt.m_reflect=ray.m_reflect-1;
-                RayMarchSingle(nxt, Reflect, winner,24,tid);
-
-                ray.m_intensity = ray.m_intensity*(1-winner->m_material.m_reflectivity) + winner->m_material.m_reflectivity*nxt.m_intensity;
+            if (objects[winner]->reflectivity>0 && r.reflect>0) {
+                ray nxt(lp,reflectionDir);
+                nxt.reflect=r.reflect-1;
+                raymarchSingle(nxt, 1, 24,world, objects);
+//                __device__ bool raymarchSingle(ray& r, int pass, int cnt, World* world, marchobject** objects)//, hitable **world) {
+                //r.intensity = r.intensity*(1-objects[winner]->reflectivity) + objects[winner]->reflectivity*nxt.intensity;
+                r.intensity = r.intensity*(1-objects[winner]->reflectivity) + objects[winner]->reflectivity*nxt.intensity;
             }
 
-    //        if (pass==Image)
+            if (pass==0) {
 
-            for (AbstractLight* al: m_globals.m_lights) {
-    //            Ray shadowRay(isp,winner->m_rotmat*al->m_direction*1);
-                Ray shadowRay(lp,al->m_direction);
-                AbstractRayObject* o= nullptr;
-                if (dynamic_cast<RayObjectBox*>(winner)!=nullptr)
-                    o=winner;
-                if (RayMarchSingle(shadowRay, Shadow, o,14,tid)) {
+                ray shadowRay(lp,world->light0);
+                if (raymarchSingle(shadowRay, 2,14,world,objects)) {
                     shadow*=0.5;
                 }
 
             }
 
-            ray.m_intensity*=shadow;
+            r.intensity*=shadow;
 
-            */
             return true;
 
         }
-//        m_globals.Sky(&ray,m_globals.m_skyScale);
+       world->sky(r);
 
         return false;
     }
 
+__global__ void create_world(marchobject* objects, marchobject** objectsI, int cnt) {
+    if (threadIdx.x == 0 && blockIdx.x == 0) {
+        for (int i=0;i<cnt;i++) {
+            if (objects[i].type==0) {
+                mo_sphere* s = new mo_sphere();
+                *(objectsI+i) = s;
+                *s =  (mo_sphere&)objects[i];
+            }
+            if (objects[i].type==1) {
+                mo_plane* s = new mo_plane();
+                *(objectsI+i) = s;
+
+                *s =  (mo_plane&)objects[i];
+//                s->pos = vec3(0,4,0);
+            }
+        }
+
+/*        *(d_list)   = new sphere(vec3(0,0,-1), 0.5);
+        *(d_list+1) = new sphere(vec3(0,-100.5,-1), 100);
+        *d_world    = new hitable_list(d_list,2);*/
+    }
+}
 
 
-
-__global__ void renderImage(vec3 *fb, int max_x, int max_y,vec3 lower_left_corner, vec3 horizontal, vec3 vertical, vec3 origin, World *world, marchobject* objects)
+__global__ void renderImage(vec3 *fb, int max_x, int max_y,vec3 lower_left_corner, vec3 horizontal, vec3 vertical, vec3 origin, World *world, marchobject** objects)
 {
    int i = threadIdx.x + blockIdx.x * blockDim.x;
    int j = threadIdx.y + blockIdx.y * blockDim.y;
@@ -170,13 +168,14 @@ __global__ void renderImage(vec3 *fb, int max_x, int max_y,vec3 lower_left_corne
    float u = float(i) / float(max_x);
    float v = float(j) / float(max_y);
    ray r(origin, (lower_left_corner + u*horizontal + v*vertical).normalized());
+//   ray r(origin, (u*horizontal + v*vertical).normalized());
    r.reflect = 3;
-   vec3 col(0,0,0);
+//   vec3 col(0,0,0);
 //   fb[pixel_index] = color(r, world);
-   if (raymarchSingle(r,0,64,world, objects)) {
-       col = r.intensity;
+   if (raymarchSingle(r,0,80,world, objects)) {
+  //     col = r.intensity;
    }
-   fb[pixel_index] = col;
+   fb[pixel_index] = r.intensity;
 
 //   raymarchSingle(const ray& r, int pass, int cnt, World* world)//, hitable **world)
 }
@@ -207,8 +206,10 @@ void RaytraceImage(int nx, int ny, int* img, World* w) {
     int bytesw = (sizeof(World));
     int bytesm = (w->length*(sizeof(marchobject)));
     marchobject* objects;
+    marchobject** objectsI;
     checkCudaErrors(cudaMallocManaged((void **)&world, bytesw));
     checkCudaErrors(cudaMallocManaged((void **)&objects, bytesm));
+    checkCudaErrors(cudaMallocManaged((void **)&objectsI, bytesm));
 /*    world->length = w->length;
     for (int i=0;i<w->length;i++)
         world->objects[i] = w->objects[i];*/
@@ -222,25 +223,36 @@ void RaytraceImage(int nx, int ny, int* img, World* w) {
     int ty = 8;
     dim3 blocks(nx/tx+1,ny/ty+1);
     dim3 threads(tx,ty);
+
+    create_world<<<1,1>>>(objects,objectsI, world->length);
+    checkCudaErrors(cudaGetLastError());
+    checkCudaErrors(cudaDeviceSynchronize());
+
+
     //renderImage<<<blocks, threads>>>(fb, nx, ny);
-    renderImage<<<blocks, threads>>>(fb, nx, ny,
+/*    renderImage<<<blocks, threads>>>(fb, nx, ny,
                                     vec3(-2.0, -1.0, -1.0),
                                     vec3(4.0, 0.0, 0.0),
                                     vec3(0.0, 2.0, 0.0),
-                                    vec3(0.0, 0.0, 0.0), world, objects);
+                                    vec3(0.0, 0.0, 0.0), world, objects);*/
+    renderImage<<<blocks, threads>>>(fb, nx, ny,
+                                    w->lower_left_corner,
+                                    w->horizontal,
+                                    w->vertical,
+                                    w->origin, world, objectsI);
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaDeviceSynchronize());
 
 
 
-
+#pragma omp parallel for
     for (int j = ny-1; j >= 0; j--) {
            for (int i = 0; i < nx; i++) {
                size_t pixel_index = j*nx + i;
                vec3& c = fb[pixel_index + 0];
-               int ir = int(255.99*c.x());
-               int ig = int(255.99*c.y());
-               int ib = int(255.99*c.z());
+               int ir = int(255.0*c.x());
+               int ig = int(255.0*c.y());
+               int ib = int(255.0*c.z());
 
                img[3*pixel_index+0] = ir;
                img[3*pixel_index+1] = ig;

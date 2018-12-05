@@ -249,24 +249,58 @@ bool RayTracer::RayMarchSingle(Ray& ray, Pass pass, AbstractRayObject* ignore, i
 
     return false;
 }
-World RayTracer::toWorld()
+World RayTracer::toWorld(float ww, float hh)
 {
     World w;
     int cnt = 0;
+/*    qDebug() <<"c" <<m_camera.m_camera;
+    qDebug() <<"t" <<m_camera.m_target;
+    qDebug() <<"u" <<m_camera.m_up;
+*/
     QVector<marchobject*> objs;
     for (AbstractRayObject* o: m_objects) {
+        marchobject* mo = nullptr;
         RayObjectSphere* s = dynamic_cast<RayObjectSphere*>(o);
         if (s!=nullptr) {
-            marchobject* mo = new mo_sphere();
-            mo->pos = vec3(s->m_position.x(),s->m_position.y(),s->m_position.z());
+            mo = new mo_sphere();
             mo->p1 = vec3(s->m_radius.x(),s->m_radius.y(),s->m_radius.z());
             mo->type = 0;
+        }
+
+        RayObjectPlane* pp = dynamic_cast<RayObjectPlane*>(o);
+        if (pp!=nullptr) {
+            mo = new mo_plane();
+            mo->type = 1;
+
+        }
+        if (mo!=nullptr) {
+            mo->pos = toVec3(o->m_position);
+            mo->mat_color = toVec3(o->m_material.m_color);
+            mo->n = toVec3(o->m_pNormal);
+            mo->reflectivity = o->m_material.m_reflectivity;
             objs.append(mo);
         }
+
     }
     w.length = objs.count();
     w.objects = new marchobject[w.length];
     for (int i=0;i<w.length;i++)
         w.objects[i] = *objs[i];
+
+
+
+    m_camera.setupViewmatrix();
+    w.origin = toVec3(m_camera.m_camera);
+ //   qDebug() << ww << hh;
+    w.lower_left_corner = toVec3(m_camera.coord2ray(0,0,ww)).normalized();
+    w.horizontal = toVec3(m_camera.coord2ray(ww,hh/2,ww)).normalized()*1;
+    w.vertical = toVec3(m_camera.coord2ray(ww/2,0,ww)).normalized()*-1;
+    w.horizontal = toVec3(m_camera.coord2ray(ww,hh/2,ww)-m_camera.coord2ray(0,hh/2,ww)).normalized()*1;
+    w.vertical = toVec3(m_camera.coord2ray(ww/2,hh,ww)-m_camera.coord2ray(ww/2,0,ww)).normalized()*1;
+//     qDebug() <<m_camera.m_invVP;
+ //       exit(1);
+//    QVector3D h = QVector3D::crossProduct(m_camera.m_up,m_camera.m_camera-m_camera.m_target).normalized();
+  //  w.horizontal = toVec3(h);
+  //  w.vertical = toVec3(QVector3D::crossProduct(m_camera.m_up,h).normalized());
     return w;
 }

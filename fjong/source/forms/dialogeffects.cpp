@@ -8,6 +8,7 @@ DialogEffects::DialogEffects(QWidget *parent) :
     ui->setupUi(this);
 
     Create();
+    m_effect->m_rendering=false;
 }
 
 DialogEffects::~DialogEffects()
@@ -56,7 +57,7 @@ void DialogEffects::UpdateImage()
     if (m_effect==nullptr)
         return;
 
-    m_effect->PerformCPU();
+    m_effect->PerformCUDA();
 
     QPixmap p = QPixmap::fromImage(m_effect->m_img);
     ui->lblImage->setPixmap(p);

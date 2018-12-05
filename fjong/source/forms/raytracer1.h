@@ -21,8 +21,8 @@ public:
 
     QImage m_img;
     int* img = nullptr;
-    bool m_rendering = false;
-    float m_time;
+    bool m_rendering = true;
+    float m_time=0;
 //    CIniFile m_file;
     int m_elapsedTime;
     QElapsedTimer m_timer;

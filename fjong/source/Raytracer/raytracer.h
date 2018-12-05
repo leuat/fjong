@@ -22,10 +22,12 @@ public:
     enum Pass { Image, Reflect, Shadow};
     void Raytrace(QImage& img);
     void Raymarch(QImage& img);
-
+    static vec3 toVec3(const QVector3D& g) {
+        return vec3(g.x(), g.y(), g.z());
+    }
     bool RayMarchSingle(Ray& ray, Pass pass, AbstractRayObject* ignore, int cnt, int tid);
 
-    World toWorld();
+    World toWorld(float ww, float hh);
 
 };
 

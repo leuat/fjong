@@ -9,14 +9,35 @@
 #define CUDA_CALLABLE_MEMBER
 #endif
 
+
+#ifdef __CUDACC__
+#define CUDA_CALLABLE_DEVICE  __device__
+#else
+#define CUDA_CALLABLE_DEVICE
+#endif
+
 #include <math.h>
 #include <stdlib.h>
 #include <iostream>
 
+
 class vec3  {
 
 
+
+
+
 public:
+
+#ifndef __CUDACC__
+    float __saturatef(const float& f) {
+        return f;
+    }
+#endif
+
+
+
+
     CUDA_CALLABLE_MEMBER vec3() {}
     CUDA_CALLABLE_MEMBER vec3(float e0, float e1, float e2) { e[0] = e0; e[1] = e1; e[2] = e2; }
     CUDA_CALLABLE_MEMBER inline float x() const { return e[0]; }
@@ -44,6 +65,10 @@ public:
     CUDA_CALLABLE_MEMBER inline float squared_length() const { return e[0]*e[0] + e[1]*e[1] + e[2]*e[2]; }
     CUDA_CALLABLE_MEMBER inline vec3 normalized() const { float l = length(); return vec3(e[0]/l, e[1]/l,e[2]/l); }
     CUDA_CALLABLE_MEMBER inline void make_unit_vector();
+
+    CUDA_CALLABLE_DEVICE inline vec3 clamp() {
+        return vec3(__saturatef(e[0]),__saturatef(e[1]),__saturatef(e[2]));
+    }
 
 
     float e[3];
@@ -97,6 +122,7 @@ CUDA_CALLABLE_MEMBER inline vec3 operator*(const vec3 &v, float t) {
 CUDA_CALLABLE_MEMBER inline float dot(const vec3 &v1, const vec3 &v2) {
     return v1.e[0] *v2.e[0] + v1.e[1] *v2.e[1]  + v1.e[2] *v2.e[2];
 }
+
 
 CUDA_CALLABLE_MEMBER inline vec3 cross(const vec3 &v1, const vec3 &v2) {
     return vec3( (v1.e[1]*v2.e[2] - v1.e[2]*v2.e[1]),

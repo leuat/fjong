@@ -21,6 +21,7 @@ public:
     QVector3D m_scale;
     QVector3D m_rotation;
     QVector3D m_localPos;
+    QVector3D m_pNormal = QVector3D(0,1,0);
 
     Material m_material;
 
@@ -89,7 +90,6 @@ public:
 
 class RayObjectPlane : public AbstractRayObject {
 public:
-    QVector3D m_pNormal = QVector3D(0,1,0);
 
     RayObjectPlane(QVector3D pos, QVector3D normal, Material material) {
         m_pNormal = normal;
