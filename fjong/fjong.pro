@@ -42,8 +42,8 @@ win32-g++ {
 
 }
 win32-msvc*{
-#    QMAKE_CXXFLAGS += -openmp
-#    LIBS += -openmp
+    QMAKE_CXXFLAGS += -openmp -O3
+    LIBS += -openmp
     QMAKE_CXXFLAGS += -Ofast
 }
 

@@ -56,7 +56,7 @@ void DialogEffects::UpdateImage()
     if (m_effect==nullptr)
         return;
 
-    m_effect->Perform();
+    m_effect->PerformCPU();
 
     QPixmap p = QPixmap::fromImage(m_effect->m_img);
     ui->lblImage->setPixmap(p);

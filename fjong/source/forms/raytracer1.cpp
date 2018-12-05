@@ -81,8 +81,9 @@ void RaytracerThread::run()
     while (!m_abort) {
         m_time+=1;
         // m_mc->Clear();
-        emit SignalImageUpdate();
-        this->msleep(50);
+        if (!m_rendering)
+            emit SignalImageUpdate();
+        this->msleep(100);
     }
 
     delete img;
@@ -116,6 +117,9 @@ void RaytracerThread::Init()
     //m_rt.m_camera.setRotation(rot);
     m_rt.m_camera.m_rotMatrix.setToIdentity();
     //m_rt.m_camera.m_camera = QVector3D(-10,0,10);
+    t=m_time/31.0;
+    float rad = 10;
+    m_rt.m_camera.m_camera = QVector3D(rad*sin(t),0,rad*cos(t));
     m_rt.m_camera.setupViewmatrix();
 
     m_rt.m_camera.m_target.setY(sin(m_time/21.34)*4-2);
@@ -133,17 +137,20 @@ void RaytracerThread::Init()
     }*/
 }
 
-void RaytracerThread::Perform()
+void RaytracerThread::PerformCUDA()
 {
-    m_img.fill(QColor(0,0,0,255));
+//    m_img.fill(QColor(0,0,0,255));
+    m_rendering=true;
     Init();
     m_timer = QElapsedTimer();
     m_timer.start();
 //        m_timer.
 //        m_rt.Raytrace(m_img);
- //   m_rt.Raymarch(m_img);
-    World world = m_rt.toWorld();
+    m_rt.Raymarch(m_img);
 //    qDebug() << "l: " <<sizeof(World)+world.length*sizeof(marchobject);
+
+    m_elapsedTime = m_timer.elapsed();
+    World world = m_rt.toWorld();
 
     RaytraceImage(m_img.width(), m_img.height(), img, &world);
 
@@ -155,9 +162,26 @@ void RaytracerThread::Perform()
                 k++;
           }
         }
+        m_rendering=false;
+
+
+}
+
+void RaytracerThread::PerformCPU()
+{
+//    m_img.fill(QColor(0,0,0,255));
+    m_rendering=true;
+    Init();
+    m_timer = QElapsedTimer();
+    m_timer.start();
+//        m_timer.
+//        m_rt.Raytrace(m_img);
+    m_rt.Raymarch(m_img);
+//    qDebug() << "l: " <<sizeof(World)+world.length*sizeof(marchobject);
 
     m_elapsedTime = m_timer.elapsed();
-  //  m_img.save("test.png");
+    m_rendering=false;
+    return;
 
 }
 

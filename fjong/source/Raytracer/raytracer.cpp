@@ -98,7 +98,7 @@ void RayTracer::Raymarch(QImage &img)
 
 
        float aspect = img.width()/(float)img.height();
-//#pragma omp parallel for
+#pragma omp parallel for
     for (int j=0;j<img.height();j++)
         for (int i=0;i<img.width();i++) {
 
@@ -111,9 +111,12 @@ void RayTracer::Raymarch(QImage &img)
 
 //            float m_z = 1E20;
             int tid = omp_get_thread_num();
+          //  tid=0;
 
             RayMarchSingle(ray, Image, nullptr,80,tid);
             QColor c = Util::toColor(ray.m_intensity*256 + m_globals.m_ambient);
+           // if (rand()%100==0)
+          //      qDebug() << c;
             img.setPixel(i,j,c.rgba());
 
         }
@@ -190,7 +193,6 @@ bool RayTracer::RayMarchSingle(Ray& ray, Pass pass, AbstractRayObject* ignore, i
             t=t+keep;
 
     }
-
 
 
     if (winner!=nullptr) {

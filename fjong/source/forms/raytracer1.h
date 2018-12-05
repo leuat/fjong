@@ -21,6 +21,7 @@ public:
 
     QImage m_img;
     int* img = nullptr;
+    bool m_rendering = false;
     float m_time;
 //    CIniFile m_file;
     int m_elapsedTime;
@@ -30,7 +31,8 @@ public:
 
     void run() override;
     void Init();
-    void Perform();
+    void PerformCUDA();
+    void PerformCPU();
 signals:
     void SignalImageUpdate();
 };
