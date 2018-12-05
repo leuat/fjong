@@ -18,7 +18,7 @@ TEMPLATE = app
 DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += warn_off
-LIBS += -L$$CUDA_DIR/lib64 -lcuda -lcudart
+CLIBS += -L$$CUDA_DIR/lib64 -lcuda -lcudart
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -135,7 +135,7 @@ CUDA_INC = $$join(INCLUDEPATH,'" -I"','-I"','"')
 
 # Add the necessary libraries
 CUDA_LIB_NAMES = cudart_static kernel32 user32 gdi32 winspool comdlg32 \
-                 advapi32 shell32 ole32 oleaut32 uuid odbc32 odbccp32 \
+                 advapi32 shell32 ole32 oleaut32 uuid odbc32 odbccp32  \
                  #freeglut glew32
 
 for(lib, CUDA_LIB_NAMES) {
@@ -161,7 +161,7 @@ else {
     # Release mode
     cuda.input = CUDA_SOURCES
     cuda.output = $$CUDA_OBJECTS_DIR/${QMAKE_FILE_BASE}_cuda.obj
-    cuda.commands = $$CUDA_DIR/bin/nvcc.exe $$NVCC_OPTIONS $$CUDA_INC $$LIBS \
+    cuda.commands = $$CUDA_DIR/bin/nvcc.exe $$NVCC_OPTIONS $$CUDA_INC $$CLIBS \
                     --machine $$SYSTEM_TYPE -arch=$$CUDA_ARCH \
                     --compile -cudart static -DWIN32 -D_MBCS \
                     -Xcompiler "/wd4819,/EHsc,/W3,/nologo,/O2,/Zi" \
