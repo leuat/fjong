@@ -42,56 +42,85 @@ vectorAdd(const float *A, const float *B, float *C, int numElements)
 /**
  * Host main routine
  */
-__device__ bool raymarchSingle(ray& r, int pass, int cnt, World* world, marchobject** objects)//, hitable **world) {
+
+
+
+//__device__ bool raymarchSingle(ray& r, int ignore, int pass, int cnt, World* world, marchobject** objects, int* culled, int tid)//, hitable **world) {
+__device__ bool raymarchSingle(ray& r, int ignore, int pass, int cnt, World* world, marchobject** objects)//, hitable **world) {
 {
     //marchobject::Init();
      vec3 isp;
      float shadow = 1;
      float t = 1;
      int winner = -1;
+
+     int culled[32];
+//     ray culledr[16];
+
+
+     int len = 0;
+
+     vec3 isp1, isp2;
+     float t1, t2;
+     for (int i=0;i<world->length;i++) {
+         if (len>=32) break;
+         if (i!=ignore)
+         if (r.IntersectSphere(objects[i]->pos*-1,vec3(1,1,1)*objects[i]->bbRadius,isp1,isp2,t1,t2)) {
+             culled[len] = i;
+             len++;
+         }
+     }
+     ray rwinner;
      r.curPos = r.org;
- //   world->length=7;
-        for (int i=0;i<cnt;i++) {
-            float precis = 0.004*t;
-            float keep=1000.0;
-            //ray.m_curStep =t; //(ray.m_origin-m_objects[j]->m_position).length();
-            //ray.setCurrent(t);
-            r.curPos = r.point_at_parameter(t);
+     //   world->length=7;
+     for (int i=0;i<cnt;i++) {
+         float precis = 0.004*t;
+         float keep=1000.0;
+         //ray.m_curStep =t; //(ray.m_origin-m_objects[j]->m_position).length();
+         //ray.setCurrent(t);
+         r.curPos = r.point_at_parameter(t);
+        // r.point_at_parameter(t);
+         int w= -1;
+         //            for (int j=0;j<world->length;j++) {//marchobject* ro: culled) {
+         for (int l=0;l<len;l++) {//marchobject* ro: culled) {
+             int j = culled[l];
 
-            int w= -1;
-//            for (int j=0;j<world->length;j++) {//marchobject* ro: culled) {
-                for (int j=0;j<world->length;j++) {//marchobject* ro: culled) {
-                float keep2 = objects[j]->intersect(r);
-                if (keep2<keep) {
-                    keep = keep2;
-                    w = j;
-
-                }
-
-                if (keep2<precis) {
-                    winner = w;
-                    i=cnt;
-                    if (pass==2)
-                        return true;
-                    break;
-
-                }
-            }
-                t=t+keep;
-
-        }
+             ray rotr = r.Rotate(objects[j]->rotMat,objects[j]->pos);
+             float keep2 = objects[j]->intersect(rotr);
+             if (keep2<keep) {
+                 keep = keep2;
+                 w = j;
 
 
+             }
 
-        if (winner!=-1) {
+             if (keep2<precis) {
+                 winner = w;
+                 i=cnt;
+                 if (pass==2) {
+
+                     return true;
+                 }
+                 rwinner = rotr;
+                 break;
+
+             }
+         }
+         t=t+keep;
+
+     }
+
+
+
+     if (winner!=-1) {
             //Ray rotated = winner->m_localRay[tid];//ray.Rotate(winner->m_rotmat, winner->m_position);
-             ray rotated = r;
+             ray rotated = rwinner;
             //ray.m_currentPos = isp;
     //                exit(1);
             isp = rotated.curPos;
             r.intensity = vec3(1,0,0);
             vec3 normal = objects[winner]->CalcMarchNormal(rotated.curPos);
-            //normal = winner->m_rotmatInv*normal;
+            normal = objects[winner]->rotMatInv*normal;
             vec3 tt(1,2,-213.123);
             vec3 tangent =cross(tt,normal).normalized();
             vec3 bi = cross(tangent,normal).normalized();
@@ -103,23 +132,20 @@ __device__ bool raymarchSingle(ray& r, int pass, int cnt, World* world, marchobj
             vec3 reflectionDir = r.dir-normal*2*dot(r.dir, normal);;
             vec3 lp = r.curPos;//-winner->m_localPos;
      //       ray.m_z=10000;
-            objects[winner]->CalculateLight(&r,normal,tangent,lp,world,reflectionDir,objects,0);
+            objects[winner]->CalculateLight(&r,normal,tangent,lp,world->light0,reflectionDir,objects,0);
 
 //            objects[winner]->reflectivity = 0.9;
 
             if (objects[winner]->reflectivity>0 && r.reflect>0) {
                 ray nxt(lp,reflectionDir);
                 nxt.reflect=r.reflect-1;
-                raymarchSingle(nxt, 1, 24,world, objects);
-//                __device__ bool raymarchSingle(ray& r, int pass, int cnt, World* world, marchobject** objects)//, hitable **world) {
-                //r.intensity = r.intensity*(1-objects[winner]->reflectivity) + objects[winner]->reflectivity*nxt.intensity;
+                raymarchSingle(nxt, winner, 1, 24,world, objects);
                 r.intensity = r.intensity*(1-objects[winner]->reflectivity) + objects[winner]->reflectivity*nxt.intensity;
             }
 
             if (pass==0) {
-
                 ray shadowRay(lp,world->light0);
-                if (raymarchSingle(shadowRay, 2,14,world,objects)) {
+                if (raymarchSingle(shadowRay, winner, 2,32,world,objects)) {
                     shadow*=0.5;
                 }
 
@@ -138,6 +164,7 @@ __device__ bool raymarchSingle(ray& r, int pass, int cnt, World* world, marchobj
 __global__ void create_world(marchobject* objects, marchobject** objectsI, int cnt) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
         for (int i=0;i<cnt;i++) {
+            objectsI[i] = nullptr;
             if (objects[i].type==0) {
                 mo_sphere* s = new mo_sphere();
                 *(objectsI+i) = s;
@@ -150,6 +177,19 @@ __global__ void create_world(marchobject* objects, marchobject** objectsI, int c
                 *s =  (mo_plane&)objects[i];
 //                s->pos = vec3(0,4,0);
             }
+            if (objects[i].type==2) {
+                mo_box* s = new mo_box();
+                *(objectsI+i) = s;
+                *s =  (mo_box&)objects[i];
+                s->box = objects[i].p2;
+//                s->pos = vec3(0,4,0);
+            }
+            if (objects[i].type==3) {
+                mo_torus* s = new mo_torus();
+                *(objectsI+i) = s;
+                *s = (mo_torus&)objects[i];
+//                s->pos = vec3(0,4,0);
+            }
         }
 
 /*        *(d_list)   = new sphere(vec3(0,0,-1), 0.5);
@@ -158,8 +198,18 @@ __global__ void create_world(marchobject* objects, marchobject** objectsI, int c
     }
 }
 
+__global__ void delete_world(marchobject* objects, marchobject** objectsI, int cnt) {
+    if (threadIdx.x == 0 && blockIdx.x == 0) {
+        for (int i=0;i<cnt;i++) {
+            if (objectsI[i]!=nullptr)
+                delete objectsI[i];
+        }
+    }
 
-__global__ void renderImage(vec3 *fb, int max_x, int max_y,vec3 lower_left_corner, vec3 horizontal, vec3 vertical, vec3 origin, World *world, marchobject** objects)
+}
+
+
+__global__ void renderImage(unsigned char *fb, int max_x, int max_y,vec3 lower_left_corner, vec3 horizontal, vec3 vertical, vec3 origin, World *world, marchobject** objects)
 {
    int i = threadIdx.x + blockIdx.x * blockDim.x;
    int j = threadIdx.y + blockIdx.y * blockDim.y;
@@ -169,13 +219,16 @@ __global__ void renderImage(vec3 *fb, int max_x, int max_y,vec3 lower_left_corne
    float v = float(j) / float(max_y);
    ray r(origin, (lower_left_corner + u*horizontal + v*vertical).normalized());
 //   ray r(origin, (u*horizontal + v*vertical).normalized());
-   r.reflect = 3;
+   r.reflect = 2;
 //   vec3 col(0,0,0);
 //   fb[pixel_index] = color(r, world);
-   if (raymarchSingle(r,0,80,world, objects)) {
+   if (raymarchSingle(r,-1,0,90,world, objects)) {
   //     col = r.intensity;
    }
-   fb[pixel_index] = r.intensity;
+   vec3 in = r.intensity.clamp();
+   fb[3*pixel_index] = in.x()*255;
+   fb[3*pixel_index+1] = in.y()*255;
+   fb[3*pixel_index+2] = in.z()*255;
 
 //   raymarchSingle(const ray& r, int pass, int cnt, World* world)//, hitable **world)
 }
@@ -193,15 +246,17 @@ __global__ void renderImage(vec3 *fb, int max_x, int max_y,vec3 lower_left_corne
 */
 
 
+unsigned char *fb = nullptr;
 
-void RaytraceImage(int nx, int ny, int* img, World* w) {
+unsigned char* RaytraceImage(int nx, int ny, int* img, World* w) {
     int num_pixels = nx*ny;
 
-    size_t fb_size = num_pixels*sizeof(vec3);
+    size_t fb_size = num_pixels*3;
 
     // allocate FB
-    vec3 *fb;
-    checkCudaErrors(cudaMallocManaged((void **)&fb, fb_size));
+    if (fb==nullptr)
+        checkCudaErrors(cudaMallocManaged((void **)&fb, fb_size));
+
     World* world;
     int bytesw = (sizeof(World));
     int bytesm = (w->length*(sizeof(marchobject)));
@@ -210,6 +265,8 @@ void RaytraceImage(int nx, int ny, int* img, World* w) {
     checkCudaErrors(cudaMallocManaged((void **)&world, bytesw));
     checkCudaErrors(cudaMallocManaged((void **)&objects, bytesm));
     checkCudaErrors(cudaMallocManaged((void **)&objectsI, bytesm));
+
+
 /*    world->length = w->length;
     for (int i=0;i<w->length;i++)
         world->objects[i] = w->objects[i];*/
@@ -224,47 +281,32 @@ void RaytraceImage(int nx, int ny, int* img, World* w) {
     dim3 blocks(nx/tx+1,ny/ty+1);
     dim3 threads(tx,ty);
 
+
+
+
     create_world<<<1,1>>>(objects,objectsI, world->length);
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaDeviceSynchronize());
 
 
-    //renderImage<<<blocks, threads>>>(fb, nx, ny);
-/*    renderImage<<<blocks, threads>>>(fb, nx, ny,
-                                    vec3(-2.0, -1.0, -1.0),
-                                    vec3(4.0, 0.0, 0.0),
-                                    vec3(0.0, 2.0, 0.0),
-                                    vec3(0.0, 0.0, 0.0), world, objects);*/
     renderImage<<<blocks, threads>>>(fb, nx, ny,
                                     w->lower_left_corner,
                                     w->horizontal,
                                     w->vertical,
                                     w->origin, world, objectsI);
+
+    checkCudaErrors(cudaGetLastError());
+    checkCudaErrors(cudaDeviceSynchronize());
+
+    delete_world<<<1,1>>>(objects,objectsI, world->length);
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaDeviceSynchronize());
 
 
-
-#pragma omp parallel for
-    for (int j = ny-1; j >= 0; j--) {
-           for (int i = 0; i < nx; i++) {
-               size_t pixel_index = j*nx + i;
-               vec3& c = fb[pixel_index + 0];
-               int ir = int(255.0*c.x());
-               int ig = int(255.0*c.y());
-               int ib = int(255.0*c.z());
-
-               img[3*pixel_index+0] = ir;
-               img[3*pixel_index+1] = ig;
-               img[3*pixel_index+2] = ib;
-
-               //std::cout << ir << " " << ig << " " << ib << "\n";
-           }
-       }
-       checkCudaErrors(cudaFree(fb));
        checkCudaErrors(cudaFree(objects));
        checkCudaErrors(cudaFree(world));
 
+       return fb;
 
 }
 

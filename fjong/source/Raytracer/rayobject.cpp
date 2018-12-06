@@ -236,7 +236,6 @@ float RayObjectTorus::intersect(Ray *ray)
     pp.setY(0);
     QVector3D q = QVector3D(pp.length()-m_radius.x(),pos.y(),0);
      return q.length()-m_radius.y();
-     return 1E20;
 }
 
 

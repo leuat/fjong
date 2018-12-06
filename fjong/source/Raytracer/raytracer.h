@@ -25,6 +25,12 @@ public:
     static vec3 toVec3(const QVector3D& g) {
         return vec3(g.x(), g.y(), g.z());
     }
+    static mat3 toMat3(const QMatrix4x4& g) {
+        return mat3( vec3(g(0,0),g(0,1),g(0,2)),
+                     vec3(g(1,0),g(1,1),g(1,2)),
+                     vec3(g(2,0),g(2,1),g(2,2)));
+
+    }
     bool RayMarchSingle(Ray& ray, Pass pass, AbstractRayObject* ignore, int cnt, int tid);
 
     World toWorld(float ww, float hh);

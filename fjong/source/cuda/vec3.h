@@ -71,6 +71,10 @@ public:
     }
 
 
+    CUDA_CALLABLE_MEMBER inline vec3 absolute() {
+        return vec3(abs(e[0]),abs(e[1]),abs(e[2]));
+    }
+
     float e[3];
 };
 
@@ -185,5 +189,9 @@ CUDA_CALLABLE_MEMBER inline vec3 &vec3::operator=(const vec3 &v2) {
 CUDA_CALLABLE_MEMBER inline vec3 unit_vector(vec3 v) {
     return v / v.length();
 }
+
+CUDA_CALLABLE_MEMBER inline vec3 maxx(const vec3& v0, const vec3& v1) {
+    return vec3(fmaxf(v0.x(), v1.x()), fmaxf(v0.y(), v1.y()),fmaxf(v0.z(), v1.z()));
+;}
 
 #endif

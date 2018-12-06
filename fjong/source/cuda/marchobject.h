@@ -1,12 +1,11 @@
 #ifndef MARCHOBJECTH
 #define MARCHOBJECTH
 #include "vec3.h"
+#include "mat3.h"
 #include "ray.h"
-
 #define MO_SPHERE 0
 #define MO_CUBE 1
 
-class World;
 
 class marchobject
 {
@@ -27,8 +26,11 @@ class marchobject
 
         vec3 pos, n, mat_color;
         vec3 p1,p2;
+        float bbRadius;
         float reflectivity = 0.5;
         float type;
+        mat3 rotMat;
+        mat3 rotMatInv;
 
 /*        static vec3 e;
 
@@ -76,7 +78,7 @@ class marchobject
         }
 
 //        void CUDA_CALLABLE_MEMBER  CalculateLight(Ray* ray, vec3& normal, vec3& tangent, vec3& isp, RayTracerGlobals &globals,vec3 reflectDir, QVector<AbstractRayObject*>& objects, int pass)
-        void CUDA_CALLABLE_DEVICE  CalculateLight(ray* ray, vec3& normal, vec3& tangent, vec3& isp, World *world,vec3 reflectDir, marchobject** objects, int pass)
+        void CUDA_CALLABLE_DEVICE  CalculateLight(ray* ray, vec3& normal, vec3& tangent, vec3& isp, const vec3& light,vec3 reflectDir, marchobject** objects, int pass)
         {
 
             //double l = (ray->m_origin-(isp+m_position)).length();
@@ -87,7 +89,6 @@ class marchobject
 //                vec3 col = m_material.m_color;
                 //vec3 col = m_material.m_color;
                 vec3 col = mat_color;//   vec3(0.4, 0.6, 1.0);
-                vec3 light = vec3(1,1,1).normalized();
                 if (pass==0)
                 {
                     //m_material.m_hasTexture=false;
@@ -147,6 +148,44 @@ public:
     CUDA_CALLABLE_MEMBER virtual float intersect(const vec3& p) {
         return (-pos.y() + p.y());
 
+    }
+};
+
+class mo_box : public marchobject {
+public:
+    vec3 box;
+    CUDA_CALLABLE_MEMBER virtual float intersect(const ray& r) {
+        return intersect(r.curPos);
+    }
+    CUDA_CALLABLE_MEMBER virtual float intersect(const vec3& p) {
+        vec3 d = (pos+p).absolute() - box;// +ray->m_currentPos;
+        float r = 0.0;
+        return fminf(fmaxf(d.x()-r,fmaxf(d.y()-r,d.z()-r)),0.0f) + maxx(d,vec3(0,0,0)).length();
+
+    }
+};
+
+class mo_torus : public marchobject {
+public:
+    vec3 box;
+    CUDA_CALLABLE_MEMBER virtual float intersect(const ray& r) {
+        return intersect(r.curPos);
+    }
+    CUDA_CALLABLE_MEMBER virtual float intersect(const vec3& p) {
+        vec3 disp = pos + p;
+        vec3 pp = disp;
+        pp.e[1] = 0;
+        vec3 q = vec3(pp.length()-p1.x(),disp.y(),0);
+         return q.length()-p1.y();
+
+
+
+/*         QVector3D pos = m_position + ray->m_currentPos;
+         QVector3D pp = pos;
+         pp.setY(0);
+         QVector3D q = QVector3D(pp.length()-m_radius.x(),pos.y(),0);
+          return q.length()-m_radius.y();
+  */
     }
 };
 

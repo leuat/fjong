@@ -273,15 +273,35 @@ World RayTracer::toWorld(float ww, float hh)
             mo->type = 1;
 
         }
+        RayObjectBox* bb = dynamic_cast<RayObjectBox*>(o);
+        if (bb!=nullptr) {
+            mo = new mo_box();
+            mo->type = 2;
+            mo->p2 = toVec3(bb->m_box);
+
+        }
+        RayObjectTorus* to = dynamic_cast<RayObjectTorus*>(o);
+        if (to!=nullptr) {
+            mo = new mo_torus();
+            mo->type = 3;
+            mo->p1 = toVec3(to->m_radius);
+
+        }
         if (mo!=nullptr) {
+            mo->bbRadius = o->m_bbRadius;
             mo->pos = toVec3(o->m_position);
+
             mo->mat_color = toVec3(o->m_material.m_color);
             mo->n = toVec3(o->m_pNormal);
+            mo->rotMat = toMat3(o->m_rotmat);
+            mo->rotMatInv = toMat3(o->m_rotmatInv);
             mo->reflectivity = o->m_material.m_reflectivity;
             objs.append(mo);
         }
 
     }
+    w.light0 = toVec3(m_globals.m_lights[0]->m_direction);
+    w.skyScale = m_globals.m_skyScale;
     w.length = objs.count();
     w.objects = new marchobject[w.length];
     for (int i=0;i<w.length;i++)

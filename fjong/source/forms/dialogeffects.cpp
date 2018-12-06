@@ -63,6 +63,8 @@ void DialogEffects::UpdateImage()
     ui->lblImage->setPixmap(p);
 
     m_avg = (int)(0.2*m_effect->m_elapsedTime +0.8*m_avg) ;
+
+
     ui->lblTime->setText(QString::number(m_avg));
 
 }

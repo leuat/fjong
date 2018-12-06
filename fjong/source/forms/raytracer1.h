@@ -9,7 +9,7 @@
 #include <QVector3D>
 #include "source/cuda/world.h"
 
-void RaytraceImage(int nx, int ny, int* img, World* w);
+uchar* RaytraceImage(int nx, int ny, int* img, World* w);
 
 class RaytracerThread  : public QThread
 {
