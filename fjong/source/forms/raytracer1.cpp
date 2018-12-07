@@ -13,7 +13,7 @@ void RaytracerThread::Initialize()
     //     m_rt.m_globals.m_lights.append(new DirectionalLight(QVector3D(-1,1,0),QVector3D(1,0.7,0)));
         m_rt.m_globals.m_lights[0]->m_color = QVector3D(1,1,0.7);
     //     SetParameters(0);
-        m_img = QImage(1024,768,QImage::Format_ARGB32);
+        m_img = QImage(768,768,QImage::Format_ARGB32);
         //m_img = QImage(160,200,QImage::Format_ARGB32);
       //  m_img = QImage(400,300,QImage::Format_ARGB32);
      //   m_img = QImage(1980,1600,QImage::Format_ARGB32);
@@ -31,16 +31,17 @@ void RaytracerThread::Initialize()
         float a = 0.05;
         m_rt.m_globals.m_ambient = QVector3D(a,a,a);
 
-        for (int i=0;i<48; i++) {
+        for (int i=0;i<16; i++) {
             int rw = 8;
             int rx = 30;
             QVector3D pos = QVector3D(rand()%rx-rx/2,rand()%rw-rw/2+1,rand()%rx-rx/2 );
             QVector3D col = QVector3D(rand()%rw,rand()%rw,rand()%rw)/(float)rw;
-            int k= rand()%60;
+            int k= rand()%100;
      //       if (i==0) k=10;
        //     if (i==1) k=70;
             float pn = 0.0;
             float ps =3.2;
+
     //        k=45;
              //k=35;
             float ref = rand()%100/100.0;
@@ -56,6 +57,8 @@ void RaytracerThread::Initialize()
             else
                m_rt.m_objects.append(new RayObjectCylinder(pos,QVector3D(0.3,0.1,2), Material(col,rand()%100,ref, pn,ps,"")));
 
+           m_rt.m_objects.last()->m_material.m_glossiness=0;
+           m_rt.m_objects.last()->m_material.m_reflectivity=0.8;
         }
 
     //    m_rt.m_objects.append(new RayObjectTorus(QVector3D(0,0,0),QVector3D(2,1,0), QVector3D(0,1,0), Material(col,rand()%150+100,0.4, 0.0f,19.123,"")));
@@ -122,7 +125,7 @@ void RaytracerThread::Init()
     //m_rt.m_camera.setRotation(rot);
     m_rt.m_camera.m_rotMatrix.setToIdentity();
     //m_rt.m_camera.m_camera = QVector3D(-10,0,10);
-    t=m_time/110.0;
+    t=m_time/210.0;
     float rad = 14 + sin(m_time/71.23)*4;
     m_rt.m_camera.m_camera = QVector3D(rad*sin(t),4,rad*cos(t));
 

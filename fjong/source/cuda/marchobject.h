@@ -28,6 +28,7 @@ class marchobject
         vec3 p1,p2;
         float bbRadius;
         float reflectivity = 0.5;
+        float glossiness;
         float type;
         mat3 rotMat;
         mat3 rotMatInv;
@@ -178,14 +179,31 @@ public:
         vec3 q = vec3(pp.length()-p1.x(),disp.y(),0);
          return q.length()-p1.y();
 
+    }
+};
+
+class mo_cylinder : public marchobject {
+public:
+    vec3 box;
+    CUDA_CALLABLE_MEMBER virtual float intersect(const ray& r) {
+        return intersect(r.curPos);
+    }
+    CUDA_CALLABLE_MEMBER virtual float intersect(const vec3& p) {
+        vec3 d = pos+p;
+        vec3 pp = vec3(d.x(), d.z(),0);
+        vec3 d2 = vec3(pp.length()-2*p1.x() + p1.y()*1.0, abs(d.y())-p1.z(),0);
+
+        return min(max(d2.x(),d2.y()),0.0f) + maxx(d2,vec3(0,0,0)).length() - p1.y();
 
 
-/*         QVector3D pos = m_position + ray->m_currentPos;
-         QVector3D pp = pos;
-         pp.setY(0);
-         QVector3D q = QVector3D(pp.length()-m_radius.x(),pos.y(),0);
-          return q.length()-m_radius.y();
+
+/*        QVector3D pos = m_position+ray->m_currentPos;
+        QVector3D p = QVector3D(pos.x(), pos.z(),0);
+        QVector3D d = QVector3D(p.length()-2*m_radius.x() + m_radius.y()*1.0, abs(pos.y())-m_radius.z(),0);
+
+        return min(max(d.x(),d.y()),0.0f) + Util::maxx(d,QVector3D(0,0,0)).length() - m_radius.y();
   */
+
     }
 };
 

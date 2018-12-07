@@ -16,7 +16,7 @@ public:
     vec3 lower_left_corner,horizontal, vertical, origin;
     vec3 light0 = vec3(1,1,1).normalized();
     float skyScale = 0.9;
-
+    int rnd[1024];
 
     void CUDA_CALLABLE_DEVICE sky(ray &r) {
       float sun = min(max(dot(light0,r.dir), 0.0f), 1.0f );

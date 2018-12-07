@@ -54,7 +54,7 @@ __device__ bool raymarchSingle(ray& r, int ignore, int pass, int cnt, World* wor
      float t = 1;
      int winner = -1;
 
-     int culled[32];
+     int culled[24];
 //     ray culledr[16];
 
 
@@ -63,7 +63,7 @@ __device__ bool raymarchSingle(ray& r, int ignore, int pass, int cnt, World* wor
      vec3 isp1, isp2;
      float t1, t2;
      for (int i=0;i<world->length;i++) {
-         if (len>=32) break;
+         if (len>=24) break;
          if (i!=ignore)
          if (r.IntersectSphere(objects[i]->pos*-1,vec3(1,1,1)*objects[i]->bbRadius,isp1,isp2,t1,t2)) {
              culled[len] = i;
@@ -136,13 +136,31 @@ __device__ bool raymarchSingle(ray& r, int ignore, int pass, int cnt, World* wor
 
 //            objects[winner]->reflectivity = 0.9;
 
+            // Reflections
             if (objects[winner]->reflectivity>0 && r.reflect>0) {
-                ray nxt(lp,reflectionDir);
-                nxt.reflect=r.reflect-1;
-                raymarchSingle(nxt, winner, 1, 24,world, objects);
-                r.intensity = r.intensity*(1-objects[winner]->reflectivity) + objects[winner]->reflectivity*nxt.intensity;
+                if (objects[winner]->glossiness==1)
+                {
+                    ray nxt(lp,reflectionDir);
+                    nxt.reflect=r.reflect-1;
+                    raymarchSingle(nxt, winner, 1, 24,world, objects);
+                    r.intensity = r.intensity*(1-objects[winner]->reflectivity) + objects[winner]->reflectivity*nxt.intensity;
+                }
+                else {
+                    shadow=10;
+                    len=0;
+                    vec3 in = vec3(0,0,0);
+                    for (int j=0;j<shadow;j++) {
+                        vec3 disp = vec3(world->rnd[3*j+0]%1024-512,world->rnd[3*j+1]%1024-512,world->rnd[3*j+2]%1024-512).normalized();
+                        disp = (disp*0.5 + reflectionDir.normalized()).normalized();
+                        ray nxt(lp,disp);
+                        nxt.reflect=0;
+                        raymarchSingle(nxt, winner, 1, 24,world, objects);
+                        in+=nxt.intensity/(float)shadow;
+                    }
+                    r.intensity = r.intensity*(1-objects[winner]->reflectivity) + objects[winner]->reflectivity*in;
+                   }
+                    shadow = 1;
             }
-
             if (pass==0) {
                 ray shadowRay(lp,world->light0);
                 if (raymarchSingle(shadowRay, winner, 2,32,world,objects)) {
@@ -188,6 +206,12 @@ __global__ void create_world(marchobject* objects, marchobject** objectsI, int c
                 mo_torus* s = new mo_torus();
                 *(objectsI+i) = s;
                 *s = (mo_torus&)objects[i];
+//                s->pos = vec3(0,4,0);
+            }
+            if (objects[i].type==4) {
+                mo_cylinder* s = new mo_cylinder();
+                *(objectsI+i) = s;
+                *s = (mo_cylinder&)objects[i];
 //                s->pos = vec3(0,4,0);
             }
         }

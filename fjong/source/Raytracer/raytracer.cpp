@@ -287,12 +287,20 @@ World RayTracer::toWorld(float ww, float hh)
             mo->p1 = toVec3(to->m_radius);
 
         }
+        RayObjectCylinder* cy = dynamic_cast<RayObjectCylinder*>(o);
+        if (cy!=nullptr) {
+            mo = new mo_cylinder();
+            mo->type = 4;
+            mo->p1 = toVec3(cy->m_radius);
+
+        }
         if (mo!=nullptr) {
             mo->bbRadius = o->m_bbRadius;
             mo->pos = toVec3(o->m_position);
 
             mo->mat_color = toVec3(o->m_material.m_color);
             mo->n = toVec3(o->m_pNormal);
+            mo->glossiness = o->m_material.m_glossiness;
             mo->rotMat = toMat3(o->m_rotmat);
             mo->rotMatInv = toMat3(o->m_rotmatInv);
             mo->reflectivity = o->m_material.m_reflectivity;
@@ -305,9 +313,12 @@ World RayTracer::toWorld(float ww, float hh)
     w.length = objs.count();
     w.objects = new marchobject[w.length];
     for (int i=0;i<w.length;i++)
-        w.objects[i] = *objs[i];
 
+       w.objects[i] = *objs[i];
 
+    for (int i=0;i<256;i++) {
+        w.rnd[i]=rand()%1000000;
+    }
 
     m_camera.setupViewmatrix();
     w.origin = toVec3(m_camera.m_camera);
