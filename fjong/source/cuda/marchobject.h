@@ -26,6 +26,8 @@ class marchobject
 
         vec3 pos, n, mat_color;
         vec3 p1,p2;
+        float perlinness = 0.4;
+        float perlinScale = 3.23;
         float bbRadius;
         float reflectivity = 0.5;
         float glossiness;
@@ -121,6 +123,21 @@ class marchobject
 //                ray->m_z = l;
             }
 
+        }
+
+
+         CUDA_CALLABLE_MEMBER vec3 GetPerturbedNormal(vec3 pos, vec3 normal, vec3 tangent)
+        {
+            if (perlinness==0)
+                return normal;
+        //    return normal;
+
+                vec3 bn = vec3::cross(tangent, normal).normalized();
+                vec3 perlin = vec3::getPerlinNormal(pos,normal,tangent,bn,0.5,perlinScale);
+                vec3 dir = (1-perlinness)*normal + (perlinness)*perlin;
+                normal = (dir + normal).normalized();
+
+            return normal;
         }
 
 

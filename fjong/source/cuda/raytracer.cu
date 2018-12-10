@@ -122,10 +122,10 @@ __device__ bool raymarchSingle(ray& r, int ignore, int pass, int cnt, World* wor
             vec3 normal = objects[winner]->CalcMarchNormal(rotated.curPos);
             normal = objects[winner]->rotMatInv*normal;
             vec3 tt(1,2,-213.123);
-            vec3 tangent =cross(tt,normal).normalized();
-            vec3 bi = cross(tangent,normal).normalized();
+            vec3 tangent =vec3::cross(tt,normal).normalized();
+            vec3 bi = vec3::cross(tangent,normal).normalized();
 
-            //normal  = winner->GetPerturbedNormal(isp,normal,tangent,m_globals);
+            normal  = objects[winner]->GetPerturbedNormal(isp,normal,tangent);
 
 
     //        ray.m_reflect = 0;
@@ -146,12 +146,12 @@ __device__ bool raymarchSingle(ray& r, int ignore, int pass, int cnt, World* wor
                     r.intensity = r.intensity*(1-objects[winner]->reflectivity) + objects[winner]->reflectivity*nxt.intensity;
                 }
                 else {
-                    shadow=10;
+                    shadow=1;
                     len=0;
                     vec3 in = vec3(0,0,0);
                     for (int j=0;j<shadow;j++) {
                         vec3 disp = vec3(world->rnd[3*j+0]%1024-512,world->rnd[3*j+1]%1024-512,world->rnd[3*j+2]%1024-512).normalized();
-                        disp = (disp*0.5 + reflectionDir.normalized()).normalized();
+                        disp = (disp*3 + reflectionDir.normalized()).normalized();
                         ray nxt(lp,disp);
                         nxt.reflect=0;
                         raymarchSingle(nxt, winner, 1, 24,world, objects);

@@ -31,7 +31,7 @@ void RaytracerThread::Initialize()
         float a = 0.05;
         m_rt.m_globals.m_ambient = QVector3D(a,a,a);
 
-        for (int i=0;i<16; i++) {
+        for (int i=0;i<1; i++) {
             int rw = 8;
             int rx = 30;
             QVector3D pos = QVector3D(rand()%rx-rx/2,rand()%rw-rw/2+1,rand()%rx-rx/2 );
@@ -44,20 +44,23 @@ void RaytracerThread::Initialize()
 
     //        k=45;
              //k=35;
+            pos = QVector3D(0,0,0);
+            k = 25;
+
             float ref = rand()%100/100.0;
     //        k=45;
            if (k>=0 && k<20)
                 m_rt.m_objects.append(new RayObjectBox(pos,QVector3D(1,1,1), Material(col,rand()%100,ref, pn,ps,"")));
             else if
                (k>=20 && k<=40)
-                m_rt.m_objects.append(new RayObjectSphere(pos,QVector3D(1,1,1), Material(col,rand()%100,ref, pn,ps,"")));
+                m_rt.m_objects.append(new RayObjectSphere(pos,QVector3D(1,1,1)*3, Material(col,rand()%100,ref, pn,ps,"")));
            else if
               (k>=40 && k<=60)
                m_rt.m_objects.append(new RayObjectTorus(pos,QVector3D(1,0.3,0), QVector3D(0,1,0),Material(col,rand()%100,ref, pn,ps,"")));
             else
                m_rt.m_objects.append(new RayObjectCylinder(pos,QVector3D(0.3,0.1,2), Material(col,rand()%100,ref, pn,ps,"")));
 
-           m_rt.m_objects.last()->m_material.m_glossiness=0;
+           m_rt.m_objects.last()->m_material.m_glossiness=1;
            m_rt.m_objects.last()->m_material.m_reflectivity=0.8;
         }
 
