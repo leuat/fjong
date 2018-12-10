@@ -12,8 +12,8 @@ class ray
         CUDA_CALLABLE_MEMBER vec3 direction() const    { return dir; }
         CUDA_CALLABLE_MEMBER vec3 point_at_parameter(float t) const { return org + t*dir; }
 
-        vec3 org, curPos;
-        vec3 dir;
+        vec3 org = vec3(0,0,0), curPos = vec3(0,0,0);
+        vec3 dir = vec3(0,0,1);
         vec3 intensity = vec3(0,0,0);
         int reflect=3;
 

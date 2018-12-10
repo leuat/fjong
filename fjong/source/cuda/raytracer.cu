@@ -111,7 +111,6 @@ __device__ bool raymarchSingle(ray& r, int ignore, int pass, int cnt, World* wor
      }
 
 
-
      if (winner!=-1) {
             //Ray rotated = winner->m_localRay[tid];//ray.Rotate(winner->m_rotmat, winner->m_position);
              ray rotated = rwinner;
@@ -125,7 +124,7 @@ __device__ bool raymarchSingle(ray& r, int ignore, int pass, int cnt, World* wor
             vec3 tangent =vec3::cross(tt,normal).normalized();
             vec3 bi = vec3::cross(tangent,normal).normalized();
 
-            normal  = objects[winner]->GetPerturbedNormal(isp,normal,tangent);
+//            normal  = objects[winner]->GetPerturbedNormal(isp,normal,tangent);
 
 
     //        ray.m_reflect = 0;
@@ -146,6 +145,7 @@ __device__ bool raymarchSingle(ray& r, int ignore, int pass, int cnt, World* wor
                     r.intensity = r.intensity*(1-objects[winner]->reflectivity) + objects[winner]->reflectivity*nxt.intensity;
                 }
                 else {
+                    // Doesn't work
                     shadow=1;
                     len=0;
                     vec3 in = vec3(0,0,0);
@@ -174,6 +174,7 @@ __device__ bool raymarchSingle(ray& r, int ignore, int pass, int cnt, World* wor
             return true;
 
         }
+
        world->sky(r);
 
         return false;
@@ -246,6 +247,7 @@ __global__ void renderImage(unsigned char *fb, int max_x, int max_y,vec3 lower_l
    r.reflect = 2;
 //   vec3 col(0,0,0);
 //   fb[pixel_index] = color(r, world);
+   r.intensity = vec3(0,0,0);
    if (raymarchSingle(r,-1,0,90,world, objects)) {
   //     col = r.intensity;
    }

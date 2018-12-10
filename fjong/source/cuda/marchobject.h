@@ -1,5 +1,6 @@
 #ifndef MARCHOBJECTH
 #define MARCHOBJECTH
+#include "misc.h"
 #include "vec3.h"
 #include "mat3.h"
 #include "ray.h"
@@ -28,9 +29,9 @@ class marchobject
         vec3 p1,p2;
         float perlinness = 0.4;
         float perlinScale = 3.23;
-        float bbRadius;
+        float bbRadius = 1;
         float reflectivity = 0.5;
-        float glossiness;
+        float glossiness = 1;
         float type;
         mat3 rotMat;
         mat3 rotMatInv;
@@ -133,7 +134,7 @@ class marchobject
         //    return normal;
 
                 vec3 bn = vec3::cross(tangent, normal).normalized();
-                vec3 perlin = vec3::getPerlinNormal(pos,normal,tangent,bn,0.5,perlinScale);
+                vec3 perlin = cudamisc::getPerlinNormal(pos,normal,tangent,bn,1,perlinScale);
                 vec3 dir = (1-perlinness)*normal + (perlinness)*perlin;
                 normal = (dir + normal).normalized();
 

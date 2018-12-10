@@ -42,39 +42,38 @@ public:
 
 
     CUDA_CALLABLE_MEMBER vec3() {}
-    CUDA_CALLABLE_MEMBER vec3(float e0, float e1, float e2) { e[0] = e0; e[1] = e1; e[2] = e2; }
-    CUDA_CALLABLE_MEMBER inline float x() const { return e[0]; }
-    CUDA_CALLABLE_MEMBER inline float y() const { return e[1]; }
-    CUDA_CALLABLE_MEMBER inline float z() const { return e[2]; }
-    CUDA_CALLABLE_MEMBER inline float r() const { return e[0]; }
-    CUDA_CALLABLE_MEMBER inline float g() const { return e[1]; }
-    CUDA_CALLABLE_MEMBER inline float b() const { return e[2]; }
+       CUDA_CALLABLE_MEMBER vec3(float e0, float e1, float e2) { e[0] = e0; e[1] = e1; e[2] = e2; }
+       CUDA_CALLABLE_MEMBER inline float x() const { return e[0]; }
+       CUDA_CALLABLE_MEMBER inline float y() const { return e[1]; }
+       CUDA_CALLABLE_MEMBER inline float z() const { return e[2]; }
+       CUDA_CALLABLE_MEMBER inline float r() const { return e[0]; }
+       CUDA_CALLABLE_MEMBER inline float g() const { return e[1]; }
+       CUDA_CALLABLE_MEMBER inline float b() const { return e[2]; }
 
-//    CUDA_CALLABLE_MEMBER inline const vec3 operator+() const { return *this; }
-    CUDA_CALLABLE_MEMBER inline vec3 operator-() const { return vec3(-e[0], -e[1], -e[2]); }
-    CUDA_CALLABLE_MEMBER inline float operator[](int i) const { return e[i]; }
-    CUDA_CALLABLE_MEMBER inline float& operator[](int i) { return e[i]; };
+       CUDA_CALLABLE_MEMBER inline const vec3& operator+() const { return *this; }
+       CUDA_CALLABLE_MEMBER inline vec3 operator-() const { return vec3(-e[0], -e[1], -e[2]); }
+       CUDA_CALLABLE_MEMBER inline float operator[](int i) const { return e[i]; }
+       CUDA_CALLABLE_MEMBER inline float& operator[](int i) { return e[i]; };
 
-    CUDA_CALLABLE_MEMBER inline vec3& operator+=(const vec3 &v2);
-    CUDA_CALLABLE_MEMBER inline vec3& operator+(const vec3 &v2);
-    CUDA_CALLABLE_MEMBER inline vec3& operator-(const vec3 &v2);
-    CUDA_CALLABLE_MEMBER inline vec3& operator-=(const vec3 &v2);
-    CUDA_CALLABLE_MEMBER inline vec3& operator*=(const vec3 &v2);
-    CUDA_CALLABLE_MEMBER inline vec3& operator/=(const vec3 &v2);
-    CUDA_CALLABLE_MEMBER inline vec3 operator*(const vec3 t);
-//    CUDA_CALLABLE_MEMBER inline vec3 operator*(const float t);
-    CUDA_CALLABLE_MEMBER inline vec3& operator*=(const float t);
-    CUDA_CALLABLE_MEMBER inline vec3& operator/=(const float t);
-    CUDA_CALLABLE_MEMBER inline vec3& operator=(const vec3 &v2);
- //   CUDA_CALLABLE_MEMBER inline vec3 operator*(float t);
-    CUDA_CALLABLE_MEMBER inline vec3& operator*(float t);
-    //    CUDA_CALLABLE_MEMBER inline vec3 operator*(float t);
+       CUDA_CALLABLE_MEMBER inline vec3& operator+=(const vec3 &v2);
+       CUDA_CALLABLE_MEMBER inline vec3& operator-=(const vec3 &v2);
+       CUDA_CALLABLE_MEMBER inline vec3& operator*=(const vec3 &v2);
+       CUDA_CALLABLE_MEMBER inline vec3& operator/=(const vec3 &v2);
+       CUDA_CALLABLE_MEMBER inline vec3& operator*=(const float t);
+       CUDA_CALLABLE_MEMBER inline vec3& operator/=(const float t);
+       CUDA_CALLABLE_MEMBER inline vec3& operator=(const vec3 &v2);
 
 
-    CUDA_CALLABLE_MEMBER inline float length() const { return sqrt(e[0]*e[0] + e[1]*e[1] + e[2]*e[2]); }
-    CUDA_CALLABLE_MEMBER inline float squared_length() const { return e[0]*e[0] + e[1]*e[1] + e[2]*e[2]; }
-    CUDA_CALLABLE_MEMBER inline vec3 normalized() const { float l = length(); return vec3(e[0]/l, e[1]/l,e[2]/l); }
-    CUDA_CALLABLE_MEMBER inline void make_unit_vector();
+       CUDA_CALLABLE_MEMBER inline float length() const { return sqrt(e[0]*e[0] + e[1]*e[1] + e[2]*e[2]); }
+       CUDA_CALLABLE_MEMBER inline float squared_length() const { return e[0]*e[0] + e[1]*e[1] + e[2]*e[2]; }
+       CUDA_CALLABLE_MEMBER inline vec3 normalized() const { float l = length(); return vec3(e[0]/l, e[1]/l,e[2]/l); }
+       CUDA_CALLABLE_MEMBER inline void make_unit_vector();
+
+
+       static float CUDA_CALLABLE_MEMBER fract(const float x)
+       {
+           return x - trunc(x);
+       }
 
     CUDA_CALLABLE_DEVICE inline vec3 clamp() {
         return vec3(__saturatef(e[0]),__saturatef(e[1]),__saturatef(e[2]));
@@ -85,10 +84,6 @@ public:
         return vec3(abs(e[0]),abs(e[1]),abs(e[2]));
     }
 
-    static float CUDA_CALLABLE_MEMBER fract(const float x)
-    {
-        return x - trunc(x);
-    }
 
     static float CUDA_CALLABLE_MEMBER hash(vec3 p)  // replace this by something better
     {
@@ -97,42 +92,8 @@ public:
         return fract( p.x()*p.y()*p.z()*(p.x()+p.y()+p.z()) );
     }
 
-/*    static vec3 mix(vec3 a, vec3 b, float c) {
-        return vec3();
-    }
-*/
     static float mix(const float& a, const float& b, const float& t) {
-        return a*t + (1-t*b);
-    }
-    static float CUDA_CALLABLE_MEMBER noise(vec3 x )
-    {
-        vec3 p = vec3(floorf(x.x()),floorf(x.y()),floorf(x.z()));
-        vec3 f = vec3(fract(x.x()),fract(x.y()),fract(x.z()));
-        vec3 kk = vec3(3.0f,3.0f,3.0f);
-        vec3 f1=f*f*kk*2.0f;
-        vec3 f2 = f*f*f*2.0f;
-        f = f1+f2;
-        return vec3::mix(vec3::mix(vec3::mix( hash(p+vec3(0,0,0)),
-                            hash(p+vec3(1,0,0)),f.x()),
-                       vec3::mix( hash(p+vec3(0,1,0)),
-                            hash(p+vec3(1,1,0)),f.x()),f.y()),
-                   vec3::mix(vec3::mix( hash(p+vec3(0,0,1)),
-                            hash(p+vec3(1,0,1)),f.x()),
-                       vec3::mix( hash(p+vec3(0,1,1)),
-                            hash(p+vec3(1,1,1)),f.x()),f.y()),f.z());
-
-    }
-
-
-
-    static CUDA_CALLABLE_MEMBER vec3 getPerlinNormal(vec3 p, vec3 n, vec3 t, vec3 bn, float s, float s2) {
-        vec3 p0 = n.normalized()+p;
-        vec3 p1 = (n+t*s).normalized()+p;
-        vec3 p2 = (n+bn*s).normalized()+p;
-        p0 = p0*(1+s*vec3::noise(vec3(s2*p0.x(), s2*p0.y(), s2*p0.z())));
-        p1 = p1*(1+s*vec3::noise(vec3(s2*p1.x(), s2*p1.y(), s2*p1.z())));
-        p2 = p2*(1+s*vec3::noise(vec3(s2*p2.x(), s2*p2.y(), s2*p2.z())));
-        return  cross(p1-p0,p2-p0).normalized();
+        return b*t + (1-t*a);
     }
 
     static CUDA_CALLABLE_MEMBER inline vec3 cross(const vec3 &v1, const vec3 &v2) {
@@ -205,7 +166,7 @@ CUDA_CALLABLE_MEMBER inline vec3& vec3::operator+=(const vec3 &v){
     return *this;
 }
 
-vec3 &vec3::operator+(const vec3 &v2)
+/*vec3 &vec3::operator+(const vec3 &v2)
 {
     e[0]+=v2.e[0];
     e[1]+=v2.e[1];
@@ -214,8 +175,8 @@ vec3 &vec3::operator+(const vec3 &v2)
 //    return vec3(x()+v2.x(),y()+v2.y(),z()+v2.z());
 
 }
-
-vec3 &vec3::operator-(const vec3 &v2)
+*/
+/*vec3 &vec3::operator-(const vec3 &v2)
 {
     e[0]-=v2.e[0];
     e[1]-=v2.e[1];
@@ -223,7 +184,7 @@ vec3 &vec3::operator-(const vec3 &v2)
     return *this;
 
 }
-
+*/
 /*vec3 vec3::operator+(const vec3 &v2)
 {
     return vec3(x()+v2.x(),y()+v2.y(),z()+v2.z());
@@ -243,11 +204,11 @@ CUDA_CALLABLE_MEMBER inline vec3& vec3::operator/=(const vec3 &v){
     return *this;
 }
 
-vec3 vec3::operator*(const vec3 t)
+/*vec3 vec3::operator*(const vec3 t)
 {
     return vec3(e[0]*t.e[0],e[1]*t.e[1],e[2]*t.e[2]);
 }
-
+*/
 CUDA_CALLABLE_MEMBER inline vec3& vec3::operator-=(const vec3& v) {
     e[0]  -= v.e[0];
     e[1]  -= v.e[1];
@@ -278,14 +239,14 @@ CUDA_CALLABLE_MEMBER inline vec3 &vec3::operator=(const vec3 &v2) {
     return *this;
 }
 
-vec3& vec3::operator*(float t)
+/*vec3& vec3::operator*(float t)
 {
     e[0]=e[0]*t;
     e[1]=e[1]*t;
     e[2]=e[2]*t;
     return *this;
 }
-
+*/
 CUDA_CALLABLE_MEMBER inline vec3 unit_vector(vec3 v) {
     return v / v.length();
 }

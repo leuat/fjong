@@ -31,7 +31,7 @@ void RaytracerThread::Initialize()
         float a = 0.05;
         m_rt.m_globals.m_ambient = QVector3D(a,a,a);
 
-        for (int i=0;i<1; i++) {
+        for (int i=0;i<32; i++) {
             int rw = 8;
             int rx = 30;
             QVector3D pos = QVector3D(rand()%rx-rx/2,rand()%rw-rw/2+1,rand()%rx-rx/2 );
@@ -44,8 +44,8 @@ void RaytracerThread::Initialize()
 
     //        k=45;
              //k=35;
-            pos = QVector3D(0,0,0);
-            k = 25;
+//            pos = QVector3D(0,0,0);
+//            k = 25;
 
             float ref = rand()%100/100.0;
     //        k=45;
