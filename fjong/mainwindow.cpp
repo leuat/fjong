@@ -8,14 +8,52 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     SetDarkPalette();
 
-    DialogEffects* de= new DialogEffects();
-    de->exec();
+//    DialogEffects* de= new DialogEffects();
+  //  de->exec();
 
+    LoadDocument("test.fjong");
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::LoadDocument(QString filename)
+{
+    if (!QFile::exists(filename))
+        return;
+
+    FJONGDocument* doc = nullptr;
+
+    if (filename.toLower().endsWith(".fjong")) {
+
+        QFile f(filename);
+        f.open(QFile::ReadOnly| QFile::Text);
+        QString text = f.readAll();
+        f.close();
+
+        doc = new FormFjongEditor(this);
+        dynamic_cast<FormFjongEditor*>(doc)->setText(text);
+
+    }
+
+    if (doc==nullptr)
+        return;
+
+    doc->m_currentSourceFile = filename;
+   m_documents.append(doc);
+   doc->InitDocument(&m_settings);
+   ui->tabMain->addTab(doc, filename);
+
+
+   connect(m_currentDoc, SIGNAL(updatePaletteSignal()), this, SLOT(updatePalette()));
+   connect(m_currentDoc, SIGNAL(requestSaveAs()), this, SLOT(SaveAs()));
+   connect(m_currentDoc, SIGNAL(requestCloseWindow()), this, SLOT(closeWindowSlot()));
+   connect(m_currentDoc, SIGNAL(emitFindFile()), this, SLOT(FindFileDialog()));
+   connect(m_currentDoc, SIGNAL(requestBuild()), this, SLOT(acceptBuild()));
+
+
 }
 
 void MainWindow::SetDarkPalette() {
@@ -39,5 +77,42 @@ void MainWindow::SetDarkPalette() {
     qApp->setStyleSheet("QToolTip { color: #ffE0C0; background-color: #000000; border: 0px; }");
 
 
+}
+
+void MainWindow::RemoveTab(int idx, bool save)
+{
+        if (idx==0)
+            return;
+
+
+        idx--;
+        FJONGDocument* doc = m_documents[idx];
+        if (!doc->SaveChanges())
+            return;
+
+        doc->PrepareClose();
+
+        if (doc==nullptr)
+            return;
+
+
+
+        ui->tabMain->removeTab(idx+1);
+
+        m_documents[idx]->Destroy();
+        m_documents[idx];
+        m_documents.remove(idx);
+
+
+        ui->tabMain->currentWidget()->setFocus();
+
+    }
+
+
+void MainWindow::closeWindowSlot()
+{
+    int idx = ui->tabMain->currentIndex();
+    RemoveTab(idx);
+    //qDebug() << "DONE";
 }
 

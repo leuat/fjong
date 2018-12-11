@@ -106,7 +106,9 @@ SOURCES += \
     source/Compiler/ast/nodeproceduredecl.cpp \
     source/Compiler/ast/nodeasm.cpp \
     source/Compiler/ast/ast.cpp \
-    source/Compiler/abstractastdispatcher.cpp
+    source/Compiler/abstractastdispatcher.cpp \
+    source/documents/fjongdocument.cpp \
+    source/documents/formfjongeditor.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -154,11 +156,14 @@ HEADERS += \
     source/Compiler/ast/nodecompound.h \
     source/Compiler/ast/nodenumber.h \
     source/Compiler/ast/ast.h \
-    source/Compiler/abstractastdispatcher.h
+    source/Compiler/abstractastdispatcher.h \
+    source/documents/fjongdocument.h \
+    source/documents/formfjongeditor.h
 
 FORMS += \
         mainwindow.ui \
-    source/forms/dialogeffects.ui
+    source/forms/dialogeffects.ui \
+    source/documents/formfjongeditor.ui
 
 # Default rules for deployment.
 
