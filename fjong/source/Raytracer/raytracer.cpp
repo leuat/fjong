@@ -133,29 +133,48 @@ bool RayTracer::RayMarchSingle(Ray& ray, Pass pass, AbstractRayObject* ignore, i
     ray.m_currentPos = ray.m_origin;
 
     // Generate list with bb
-    QVector<AbstractRayObject*> culled;
+//    QVector<AbstractRayObject*> culled;
+//    culled.resize(m_objects.size());
+    if (m_culled.size()==0)
+        m_culled.resize(omp_get_max_threads());
+    if (m_culled[tid]==nullptr) {
+        m_culled[tid] = new QVector<AbstractRayObject*>();
+        m_culled[tid]->resize(100);
+    }
+/*    if (m_culled[tid].size()==0) {
+        m_culled[tid].resize(100);
+    }
+*/
+    QVector<AbstractRayObject*>* culled = m_culled[tid];
+
+    int ccnt = 0;
+    double closest = 1E30;
     for (AbstractRayObject* o: m_objects) {
         QVector3D isp1, isp2;
         double t0, t1;
         if (ray.IntersectSphere(o->m_position*-1,QVector3D(1,1,1)*o->m_bbRadius,isp1, isp2, t0,t1)) {
             //if (( t1>0) || dynamic_cast<RayObjectPlane*>(o)!=nullptr)
-                culled.append(o);
+//                culled.append(o);
+            (*culled)[ccnt]=o;
+            ccnt++;
         }
 
 
     }
+//    return false;
 
+//    culled.resize(ccnt);
 //    culled = m_objects;
 
-    if (culled.length()==0) {
+    if (culled->length()==0) {
         m_globals.Sky(&ray, m_globals.m_skyScale);
         return false;
     }
 
-    for (AbstractRayObject* ro: culled) {
+    for (int j=0;j<ccnt;j++) {
+        AbstractRayObject* ro = (*culled)[j];
         ro->m_localRay[tid] = ray.Rotate(ro->m_rotmat, ro->m_position);
     }
-
 
     for (int i=0;i<cnt;i++) {
         float precis = 0.004*t;
@@ -163,30 +182,27 @@ bool RayTracer::RayMarchSingle(Ray& ray, Pass pass, AbstractRayObject* ignore, i
         ray.m_curStep =t; //(ray.m_origin-m_objects[j]->m_position).length();
         ray.setCurrent(t);
 
-
-
-
         //rotated = ray;
         AbstractRayObject* w= nullptr;
-        for (AbstractRayObject* ro: culled) {
-
+        for (int j=0;j<ccnt;j++) {
+            AbstractRayObject *ro = (*culled)[j];
             if (ro==ignore)
                 continue;
+
             ro->m_localRay[tid].setCurrent(t);
 
             float keep2 =ro->intersect(&ro->m_localRay[tid]);
             if (keep2<keep) {
                 keep = keep2;
-                w = ro;
-
+//                w = ro;
             }
 
             if (keep2<precis) {
-                winner = w;
-                i=cnt;
+                winner = ro;
+                i=cnt+1;
                 if (pass==Shadow)
                     return true;
-                break;
+                continue;
 
             }
         }
@@ -195,7 +211,7 @@ bool RayTracer::RayMarchSingle(Ray& ray, Pass pass, AbstractRayObject* ignore, i
     }
 
 
-    if (winner!=nullptr) {
+    if (winner!=nullptr && 1==1)  {
         Ray rotated = winner->m_localRay[tid];//ray.Rotate(winner->m_rotmat, winner->m_position);
 
         //ray.m_currentPos = isp;

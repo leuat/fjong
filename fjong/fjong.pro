@@ -18,7 +18,18 @@ TEMPLATE = app
 DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += warn_off
-CLIBS += -L$$CUDA_DIR/lib64 -lcuda -lcudart
+
+linux-g*{
+    QMAKE_CXXFLAGS += -fopenmp
+    QMAKE_CXXFLAGS +=  -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-comment -Wno-parentheses -Wno-delete-non-virtual-dtor -Wno-missing-noreturn
+    LIBS += -fopenmp
+    QMAKE_CXXFLAGS +=  -Ofast -O3
+    DEFINES += IGNORE_CUDA
+}
+
+
+
+win32:CLIBS += -L$$CUDA_DIR/lib64 -lcuda -lcudart
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -47,13 +58,6 @@ win32-msvc*{
     QMAKE_CXXFLAGS += -Ofast
 }
 
-linux-g*{
-    QMAKE_CXXFLAGS += -fopenmp
-    QMAKE_CXXFLAGS +=  -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-comment -Wno-parentheses -Wno-delete-non-virtual-dtor -Wno-missing-noreturn
-    LIBS += -fopenmp
-    QMAKE_CXXFLAGS +=  -Ofast
-
-}
 
 INCLUDEPATH += ../../TRSE/source/LeLib/util/
 
@@ -70,9 +74,6 @@ SOURCES += \
     ../../TRSE/source/LeLib/util/SimplexNoise.cpp \
     source/forms/dialogeffects.cpp \
     source/forms/raytracer1.cpp \
-        ../../TRSE/source/LeLib/util/cinifile.cpp \
-        ../../TRSE/source/LeLib/util/SimplexNoise.cpp \
-        ../../TRSE/source/LeLib/util/util.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -88,7 +89,6 @@ HEADERS += \
     source/forms/dialogeffects.h \
     source/forms/raytracer1.h \
     source/Raytracer/raytracer.h \
-    source/cuda/vec3.h
 
 FORMS += \
         mainwindow.ui \
@@ -96,7 +96,7 @@ FORMS += \
 
 # Default rules for deployment.
 
-
+win32 {
 CUDA_DIR = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.0/"
 
 CUDA_OBJECTS_DIR = OBJECTS_DIR/../cuda
@@ -169,4 +169,6 @@ else {
                     -c -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
     cuda.dependency_type = TYPE_C
     QMAKE_EXTRA_COMPILERS += cuda
+}
+
 }

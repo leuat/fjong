@@ -27,7 +27,7 @@ public:
         b=c;
     }
 
-    void setCurrent(float t) {
+    void setCurrent(const float& t) {
         m_currentPos  = m_origin + m_direction*t;
     }
 

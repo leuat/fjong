@@ -13,7 +13,7 @@ void RaytracerThread::Initialize()
     //     m_rt.m_globals.m_lights.append(new DirectionalLight(QVector3D(-1,1,0),QVector3D(1,0.7,0)));
         m_rt.m_globals.m_lights[0]->m_color = QVector3D(1,1,0.7);
     //     SetParameters(0);
-        m_img = QImage(768,768,QImage::Format_ARGB32);
+        m_img = QImage(320,200,QImage::Format_ARGB32);
         //m_img = QImage(160,200,QImage::Format_ARGB32);
       //  m_img = QImage(400,300,QImage::Format_ARGB32);
      //   m_img = QImage(1980,1600,QImage::Format_ARGB32);
@@ -31,9 +31,9 @@ void RaytracerThread::Initialize()
         float a = 0.05;
         m_rt.m_globals.m_ambient = QVector3D(a,a,a);
 
-        for (int i=0;i<32; i++) {
+        for (int i=0;i<8; i++) {
             int rw = 8;
-            int rx = 30;
+            int rx = 16;
             QVector3D pos = QVector3D(rand()%rx-rx/2,rand()%rw-rw/2+1,rand()%rx-rx/2 );
             QVector3D col = QVector3D(rand()%rw,rand()%rw,rand()%rw)/(float)rw;
             int k= rand()%100;
@@ -41,11 +41,6 @@ void RaytracerThread::Initialize()
        //     if (i==1) k=70;
             float pn = 0.0;
             float ps =3.2;
-
-    //        k=45;
-             //k=35;
-//            pos = QVector3D(0,0,0);
-//            k = 25;
 
             float ref = rand()%100/100.0;
     //        k=45;
@@ -162,8 +157,10 @@ void RaytracerThread::PerformCUDA()
 
     World world = m_rt.toWorld(m_img.width(),m_img.height());
 
-    uchar* data = RaytraceImage(m_img.width(), m_img.height(), img, &world);
-
+    uchar* data = nullptr;
+#ifndef IGNORE_CUDA
+    data = RaytraceImage(m_img.width(), m_img.height(), img, &world);
+#endif
 //    for (int i=0;i<m_img.width()*m_img.height()*3;i++)
   //      img[i]=rand()%255;
 

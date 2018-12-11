@@ -11,17 +11,19 @@
 #include "source/cuda/world.h"
 
 
-
 class RayTracer
 {
 public:
     RayTracer();
     QVector<AbstractRayObject*> m_objects;
+    QVector< QVector<AbstractRayObject*>*> m_culled;
     Camera m_camera;
     RayTracerGlobals m_globals;
     enum Pass { Image, Reflect, Shadow};
     void Raytrace(QImage& img);
     void Raymarch(QImage& img);
+
+
     static vec3 toVec3(const QVector3D& g) {
         return vec3(g.x(), g.y(), g.z());
     }

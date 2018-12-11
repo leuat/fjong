@@ -117,7 +117,9 @@ class marchobject
 
 
                     vec3 H = ((light-ray->dir.normalized())).normalized();
+#ifndef IGNORE_CUDA
                     ray->intensity+=  vec3(1,1,1)*max(pow(dot(H,normal),100),0.0f);
+#endif
 
 //                    ray->intensity += ApplySpecularLight(normal,ray->m_direction,  globals, m_material);
                 }
