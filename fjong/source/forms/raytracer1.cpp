@@ -4,7 +4,6 @@ RaytracerThread::RaytracerThread()
 {
 
 
-//    qDebug() << "whoo";
 
 }
 

@@ -74,6 +74,39 @@ SOURCES += \
     ../../TRSE/source/LeLib/util/SimplexNoise.cpp \
     source/forms/dialogeffects.cpp \
     source/forms/raytracer1.cpp \
+    source/documents/highlighter.cpp \
+    source/documents/codeeditor.cpp \
+    source/Compiler/token.cpp \
+    source/Compiler/syntax.cpp \
+    source/Compiler/symboltable.cpp \
+    source/Compiler/pvar.cpp \
+    source/Compiler/parser.cpp \
+    source/Compiler/lexer.cpp \
+    source/Compiler/errorhandler.cpp \
+    source/Compiler/compiler.cpp \
+    source/Compiler/ast/nodeassign.cpp \
+    source/Compiler/ast/nodebinop.cpp \
+    source/Compiler/ast/node.cpp \
+    source/Compiler/ast/nodevardecl.cpp \
+    source/Compiler/ast/nodevar.cpp \
+    source/Compiler/ast/nodevartype.cpp \
+    source/Compiler/ast/nodeforloop.cpp \
+    source/Compiler/ast/nodeprocedure.cpp \
+    source/Compiler/ast/nodeprogram.cpp \
+    source/Compiler/ast/nodebinaryclause.cpp \
+    source/Compiler/ast/nodeunaryop.cpp \
+    source/Compiler/ast/nodebuiltinmethod.cpp \
+    source/Compiler/ast/nodecompound.cpp \
+    source/Compiler/ast/nodevararray.cpp \
+    source/Compiler/ast/nodeblock.cpp \
+    source/Compiler/ast/nodewhileloop.cpp \
+    source/Compiler/ast/nodenumber.cpp \
+    source/Compiler/ast/nodestring.cpp \
+    source/Compiler/ast/nodeconditional.cpp \
+    source/Compiler/ast/nodeproceduredecl.cpp \
+    source/Compiler/ast/nodeasm.cpp \
+    source/Compiler/ast/ast.cpp \
+    source/Compiler/abstractastdispatcher.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -89,6 +122,39 @@ HEADERS += \
     source/forms/dialogeffects.h \
     source/forms/raytracer1.h \
     source/Raytracer/raytracer.h \
+    source/documents/highlighter.h \
+    source/documents/codeeditor.h \
+    source/Compiler/token.h \
+    source/Compiler/syntax.h \
+    source/Compiler/symboltable.h \
+    source/Compiler/pvar.h \
+    source/Compiler/parser.h \
+    source/Compiler/lexer.h \
+    source/Compiler/errorhandler.h \
+    source/Compiler/compiler.h \
+    source/Compiler/ast/nodebinop.h \
+    source/Compiler/ast/nodevar.h \
+    source/Compiler/ast/nodevardecl.h \
+    source/Compiler/ast/nodeunaryop.h \
+    source/Compiler/ast/node.h \
+    source/Compiler/ast/nodebinaryclause.h \
+    source/Compiler/ast/nodevararray.h \
+    source/Compiler/ast/nodeprocedure.h \
+    source/Compiler/ast/nodeconditional.h \
+    source/Compiler/ast/nodevartype.h \
+    source/Compiler/ast/nodeproceduredecl.h \
+    source/Compiler/ast/nodebuiltinmethod.h \
+    source/Compiler/ast/nodewhileloop.h \
+    source/Compiler/ast/nodeprogram.h \
+    source/Compiler/ast/nodeasm.h \
+    source/Compiler/ast/nodestring.h \
+    source/Compiler/ast/nodeblock.h \
+    source/Compiler/ast/nodeforloop.h \
+    source/Compiler/ast/nodeassign.h \
+    source/Compiler/ast/nodecompound.h \
+    source/Compiler/ast/nodenumber.h \
+    source/Compiler/ast/ast.h \
+    source/Compiler/abstractastdispatcher.h
 
 FORMS += \
         mainwindow.ui \
